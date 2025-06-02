@@ -68,6 +68,9 @@ $menu = [
 
 $right_menu = [
     [
+        'key' => 'setores',
+    ],
+    [
         // menu utilizado para views da biblioteca senhaunica-socialite.
         'key' => 'senhaunica-socialite',
     ],

@@ -1,0 +1,8 @@
+<form action="{{ route('setor.destroy', $setor->id) }}" method="POST" style="display:inline;">
+  @csrf
+  @method('DELETE')
+  <button type="submit" class="btn btn-sm btn-outline-danger py-0"
+    onclick="return confirm('Tem certeza que deseja excluir este setor?')">
+    <i class="fas fa-trash"></i>
+  </button>
+</form>

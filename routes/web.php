@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SetorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,3 +22,15 @@ Route::get('/', function () {
 Route::fallback(function(){
     return view('errors.404');
  });
+
+Route::get('setor', [SetorController::class, 'index'])->name('setor.index');
+Route::get('setor/create', [SetorController::class, 'create'])->name('setor.create');
+Route::post('setor/create', [SetorController::class, 'store'])->name('setor.store');
+Route::get('setor/edit/{setor_id}', [SetorController::class, 'edit'])->name('setor.edit');
+Route::put('setor/edit/{setor_id}', [SetorController::class, 'update'])->name('setor.update');
+Route::get('setor/{setor_id}', [SetorController::class, 'show'])->name('setor.show');
+Route::delete('setor/{setor_id}', [SetorController::class, 'destroy'])->name('setor.destroy');
+Route::get('setor/select/{id}', [SetorController::class, 'selectSetor'])->name('setor.select');
+Route::put('/setor/{id}/editarResponsavel', [SetorController::class, 'editarResponsavel'])->name('setor.editarResponsavel');
+Route::put('/setor/editarGerentes', [SetorController::class, 'editarGerentes'])->name('setor.editarGerentes');
+
