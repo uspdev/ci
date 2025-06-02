@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SetorController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\DocumentoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,4 +35,14 @@ Route::delete('setor/{setor_id}', [SetorController::class, 'destroy'])->name('se
 Route::get('setor/select/{id}', [SetorController::class, 'selectSetor'])->name('setor.select');
 Route::put('/setor/{id}/editarResponsavel', [SetorController::class, 'editarResponsavel'])->name('setor.editarResponsavel');
 Route::put('/setor/editarGerentes', [SetorController::class, 'editarGerentes'])->name('setor.editarGerentes');
+
+Route::prefix('categorias')->name('categoria.')->group(function () {
+    Route::get('/', [CategoriaController::class, 'index'])->name('index');
+    Route::get('/create', [CategoriaController::class, 'create'])->name('create');
+    Route::post('/', [CategoriaController::class, 'store'])->name('store');
+    Route::get('/{id}', [CategoriaController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [CategoriaController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [CategoriaController::class, 'update'])->name('update');
+    Route::delete('/{id}', [CategoriaController::class, 'destroy'])->name('destroy');
+});
 
