@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use \Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // https://github.com/spatie/laravel-activitylog/issues/39
+        Activity::saving(function (Activity $activity) {
+            $activity->properties = $activity->properties->put('agent', [
+                'ip' => Request()->ip()
+            ]);
+        });
     }
 }

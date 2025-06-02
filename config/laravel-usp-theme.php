@@ -46,14 +46,9 @@ $menu = [
         'can' => 'user'
     ],
     [
-        'text' => 'Menu gerente',
-        'url' => 'gerente',
-        'can' => 'gerente',
-    ],
-    [
-        'text' => 'Menu admin',
-        'submenu' => $admin,
-        'can' => 'admin',
+        'text' => 'Documentos',
+        'url' => './documentos',
+        'can' => 'user'
     ],
 ];
 
