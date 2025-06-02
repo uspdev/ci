@@ -18,7 +18,7 @@
     <div class="card-body">
       <div class="row mb-4">
         <div class="col-md-6">
-          <strong>Nome:</strong> {{ $categoria->nome }}
+          <strong>Nome:</strong> {{ $categoria->nome }} - {{ $categoria->abreviacao }}
         </div>
         <div class="col-md-6">
           <strong>Setor:</strong> {{ $categoria->setor->name }}

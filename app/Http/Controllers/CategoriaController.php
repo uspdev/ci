@@ -82,10 +82,12 @@ class CategoriaController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,setor_id,' . $setorId,
+            'abreviacao' => 'required|string|max:10',
         ]);
 
         $categoria = Categoria::create([
             'nome' => $request->nome,
+            'abreviacao' => $request->abreviacao,
             'setor_id' => $setorId,
         ]);
 
@@ -155,10 +157,12 @@ class CategoriaController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,' . $id . ',id,setor_id,' . $categoria->setor_id,
+            'abreviacao' => 'required|string|max:10',
         ]);
 
         $categoria->update([
             'nome' => $request->nome,
+            'abreviacao' => $request->abreviacao,
         ]);
 
         session()->flash('alert-success', 'Categoria atualizada com sucesso!');

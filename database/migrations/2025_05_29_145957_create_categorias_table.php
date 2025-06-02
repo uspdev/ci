@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
+            $table->string('abreviacao');
             $table->unsignedBigInteger('setor_id');
             $table->timestamps();
             $table->foreign('setor_id')->references('id')->on('setors')->onDelete('cascade');

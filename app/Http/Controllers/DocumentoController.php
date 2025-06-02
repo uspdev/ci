@@ -36,7 +36,7 @@ class DocumentoController extends Controller
             $proximoNumero = isset($matches[1]) ? intval($matches[1]) + 1 : 1;
         }
 
-        $categoriaAbrev = strtoupper(substr(iconv('UTF-8', 'ASCII//TRANSLIT', $categoria->nome), 0, 3));
+        $categoriaAbrev = iconv('UTF-8', 'ASCII//TRANSLIT', $categoria->abreviacao);
         $numero = str_pad($proximoNumero, 3, '0', STR_PAD_LEFT);
         $setorNome = strtoupper($setor->name);
         

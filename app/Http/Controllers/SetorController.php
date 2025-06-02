@@ -80,13 +80,14 @@ class SetorController extends Controller
     private function criarCategoriasPadrao(Setor $setor)
     {
         $categoriasPadrao = [
-            'Memorando',
-            'Ofício'
+            'Memorando' => 'MEM',
+            'Ofício' => 'OFC'
         ];
 
-        foreach ($categoriasPadrao as $nomeCategoria) {
+        foreach ($categoriasPadrao as $nomeCategoria => $abreviacao) {
             Categoria::create([
                 'nome' => $nomeCategoria,
+                'abreviacao' => $abreviacao,
                 'setor_id' => $setor->id
             ]);
         }
