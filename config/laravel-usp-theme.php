@@ -1,40 +1,5 @@
 <?php
 
-$admin = [
-    [
-        'text' => '<i class="fas fa-atom"></i>  SubItem 1',
-        'url' => 'subitem1',
-    ],
-    [
-        'text' => 'SubItem 2',
-        'url' =>  '/subitem2',
-        'can' => 'admin',
-    ],
-    [
-        'type' => 'divider',
-    ],
-    [
-        'type' => 'header',
-        'text' => 'Cabeçalho',
-    ],
-    [
-        'text' => 'SubItem 3',
-        'url' => 'subitem3',
-    ],
-];
-
-$submenu2 = [
-    [
-        'text' => 'SubItem 1',
-        'url' => 'subitem1',
-    ],
-    [
-        'text' => 'SubItem 2',
-        'url' => 'subitem2',
-        'can' => 'admin',
-    ],
-];
-
 $menu = [
     [
         'text' => '<i class="fas fa-home"></i> Home',
@@ -48,6 +13,11 @@ $menu = [
     [
         'text' => 'Documentos',
         'url' => 'documentos',
+        'can' => 'user'
+    ],
+    [
+        'text' => 'Templates',
+        'url' => 'templates',
         'can' => 'user'
     ],
 ];

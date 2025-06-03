@@ -57,5 +57,15 @@ Route::prefix('documentos')->name('documento.')->group(function () {
     Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('destroy');
     Route::post('/{id}/anexo', [DocumentoController::class, 'uploadAnexo'])->name('anexo.upload');
     Route::get('/atividades/{id}', [DocumentoController::class, 'detalharAtividade'])->name('atividade');
+});
 
+Route::prefix('templates')->name('template.')->group(function () {
+    Route::get('/', [TemplateController::class, 'index'])->name('index');
+    Route::get('/create', [TemplateController::class, 'create'])->name('create');
+    Route::post('/', [TemplateController::class, 'store'])->name('store');
+    Route::get('/{id}', [TemplateController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [TemplateController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [TemplateController::class, 'update'])->name('update');
+    Route::delete('/{id}', [TemplateController::class, 'destroy'])->name('destroy');
+    Route::get('/{template}/pdf', [TemplateController::class, 'gerarPdf'])->name('gerarPdf');
 });
