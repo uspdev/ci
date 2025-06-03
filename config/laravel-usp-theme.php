@@ -42,12 +42,12 @@ $menu = [
     ],
     [
         'text' => 'Categorias',
-        'url' => './categorias',
+        'url' => 'categorias',
         'can' => 'user'
     ],
     [
         'text' => 'Documentos',
-        'url' => './documentos',
+        'url' => 'documentos',
         'can' => 'user'
     ],
 ];

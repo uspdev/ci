@@ -18,6 +18,7 @@ class CategoriaController extends Controller
     public function index(Request $request)
     {
         $this->authorize('setorManager');
+        \UspTheme::activeUrl('categorias');
 
         $setorId = session('setor_id');
         

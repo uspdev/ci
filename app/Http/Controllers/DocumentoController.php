@@ -50,6 +50,7 @@ class DocumentoController extends Controller
     public function index(Request $request)
     {
         $this->authorize('setorManager');
+        \UspTheme::activeUrl('documentos');
 
         $setorId = session('setor_id');
         
