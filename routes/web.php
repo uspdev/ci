@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SetorController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\TemplateController;
+
 use App\Http\Controllers\DocumentoController;
 
 /*
@@ -57,6 +59,7 @@ Route::prefix('documentos')->name('documento.')->group(function () {
     Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('destroy');
     Route::post('/{id}/anexo', [DocumentoController::class, 'uploadAnexo'])->name('anexo.upload');
     Route::get('/atividades/{id}', [DocumentoController::class, 'detalharAtividade'])->name('atividade');
+    Route::get('{id}/pdf', [DocumentoController::class, 'gerarPdf'])->name('pdf');
 });
 
 Route::prefix('templates')->name('template.')->group(function () {

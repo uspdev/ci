@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use \Spatie\Activitylog\Models\Activity;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DocumentoController extends Controller
 {
@@ -349,5 +350,72 @@ class DocumentoController extends Controller
         $old = $activity->properties['old'] ?? [];
         $new = $activity->properties['attributes'] ?? [];
         return view('documento.atividade', compact('activity', 'old', 'new'));
+    }
+
+    public function gerarPdf($id)
+    {
+        $documento = \App\Models\Documento::with('template', 'categoria', 'categoria.setor')->findOrFail($id);
+
+        if (!$documento->template) {
+            return redirect()->back()->with('alert-danger', 'Documento não possui template associado.');
+        }
+
+        $conteudo = $documento->template->conteudo_padrao;
+
+        $codigo = '';
+        if (preg_match('/Nº (\d+)\//', $documento->codigo, $matches)) {
+            $codigo = $matches[1];
+        }
+
+        $variaveis = [
+            'codigo'      => $documento->codigo,
+            'numero'      => $codigo,
+            'ano'         => $documento->data_documento->format('Y'),
+            'destinatario'=> $documento->destinatario,
+            'remetente'   => $documento->remetente,
+            'setor'       => $documento->categoria->setor->name ?? '',
+            'data'        => $documento->data_documento->format('d/m/Y'),
+            'assunto'     => $documento->assunto,
+            'mensagem'    => $documento->mensagem,
+        ];
+
+        foreach ($variaveis as $chave => $valor) {
+            $conteudo = str_replace('{{ '.$chave.' }}', $valor, $conteudo);
+        }
+
+        $htmlHash = md5($conteudo);
+
+        $anexoExistente = Anexo::where('documento_id', $documento->id)
+            ->where('tipo_anexo', 'gerado')
+            ->where('nome_arquivo', $htmlHash . '.pdf')
+            ->first();
+        $docName = $documento->categoria->setor->name . '_' . $documento->categoria->abreviacao . '_' . $codigo . '.pdf';
+
+        if (!$anexoExistente) {
+            $pdf = Pdf::loadHTML($conteudo);
+            $pdfContent = $pdf->output();
+
+            $nomeArquivo = $htmlHash . '.pdf';
+            $caminho = 'documentos/gerados/' . $nomeArquivo;
+
+            Storage::disk('public')->put($caminho, $pdfContent);
+
+            Anexo::create([
+                'documento_id'   => $documento->id,
+                'nome_original'  => $docName,
+                'nome_arquivo'   => $nomeArquivo,
+                'caminho'        => $caminho,
+                'tipo_mime'      => 'application/pdf',
+                'tamanho'        => strlen($pdfContent),
+                'tipo_anexo'     => 'gerado',
+                'user_id'        => auth()->id(),
+            ]);
+        } else {
+            $pdfContent = Storage::disk('public')->get($anexoExistente->caminho);
+        }
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="'.$docName.'"');
     }
 }

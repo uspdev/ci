@@ -22,6 +22,11 @@
         @else
           <span class="badge bg-success fs-6 text-white">Documento Finalizado</span>
         @endunless
+        @if (isset($documento->template))
+            <a href="{{ route('documento.pdf', $documento->id) }}" class="btn btn-outline-secondary" target="_blank">
+              <i class="fas fa-file-pdf"></i> Gerar PDF
+            </a>
+        @endif
         <a href="{{ route('documento.index') }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
         </a>
@@ -78,7 +83,7 @@
 
       @if ($documento->anexos->count() > 0)
         <div class="mb-4">
-          <h5><i class="fas fa-paperclip"></i> Anexos ({{ $documento->anexos->count() }})</h5>
+          <h5>Anexos</h5>
           <div class="list-group">
             @foreach ($documento->anexos as $anexo)
               <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -86,13 +91,13 @@
                   <strong>{{ $anexo->nome_original }}</strong>
                   <br>
                   <small class="text-muted">
-                    <i class="fas fa-weight"></i> Tamanho: {{ number_format($anexo->tamanho / 1024, 2) }} KB |
-                    <i class="fas fa-file"></i> Tipo: {{ $anexo->tipo_mime }} |
-                    <i class="fas fa-clock"></i> Adicionado em: {{ $anexo->created_at->format('d/m/Y H:i') }}
+                    Tamanho: {{ number_format($anexo->tamanho / 1024, 2) }} KB |
+                    Tipo: {{ $anexo->tipo_mime }} |
+                    Adicionado em: {{ $anexo->created_at->format('d/m/Y H:i') }}
                   </small>
                 </div>
                 <div>
-                  <span class="badge bg-secondary me-2">{{ ucfirst($anexo->tipo_anexo) }}</span>
+                  <span class="badge bg-secondary me-2 text-white">{{ ucfirst($anexo->tipo_anexo) }}</span>
                   <a href="{{ Storage::url($anexo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-download"></i> Download
                   </a>
