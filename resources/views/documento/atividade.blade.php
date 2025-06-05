@@ -155,17 +155,17 @@
           </td>
         </tr>
         <tr>
-          <td>Setor</td>
+          <td>Grupo</td>
           <td>
-            @if (!empty($old['setor_id']))
-              {{ \App\Models\Setor::find($old['setor_id'])->name ?? 'Setor não encontrado' }}
+            @if (!empty($old['grupo_id']))
+              {{ \App\Models\Grupo::find($old['grupo_id'])->name ?? 'Grupo não encontrado' }}
             @else
               -
             @endif
           </td>
           <td>
-            @if (!empty($new['setor_id']))
-              {{ \App\Models\Setor::find($new['setor_id'])->name ?? 'Setor não encontrado' }}
+            @if (!empty($new['grupo_id']))
+              {{ \App\Models\Grupo::find($new['grupo_id'])->name ?? 'Grupo não encontrado' }}
             @else
               -
             @endif

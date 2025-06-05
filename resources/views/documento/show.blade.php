@@ -50,7 +50,7 @@
           <strong>Categoria:</strong> {{ $documento->categoria->nome }}
         </div>
         <div class="col-md-6 mt-2">
-          <strong>Setor:</strong> {{ $documento->categoria->setor->name }}
+          <strong>Grupo:</strong> {{ $documento->categoria->grupo->name }}
         </div>
         @if ($documento->template)
           <div class="col-md-6 mt-2">

@@ -4,8 +4,8 @@
   <div class="row">
     <div class="col-md-8">
       <div class="card">
-        <div class="card-header h4">Setores
-          @include('setor.partials.add-btn')
+        <div class="card-header h4">Grupos
+          @include('grupo.partials.add-btn')
         </div>
         <div class="card-body">
           <table class="table table-bordered table-striped table-hover">
@@ -17,14 +17,14 @@
               </tr>
             </thead>
             <tbody>
-              @foreach ($setores as $setor)
+              @foreach ($grupos as $grupo)
                 <tr>
                   <td class="d-flex justify-content-start">
-                    @include('setor.partials.edit-btn')
-                    @include('setor.partials.delete-btn')
+                    @include('grupo.partials.edit-btn')
+                    @include('grupo.partials.delete-btn')
                   </td>
-                  <td>{{ $setor->name }}</td>
-                  <td>{{ $setor->description }}</td>
+                  <td>{{ $grupo->name }}</td>
+                  <td>{{ $grupo->description }}</td>
                 </tr>
               @endforeach
             </tbody>
@@ -32,17 +32,17 @@
         </div>
       </div>
     </div>
-    {{-- gerentes de setor --}}
+    {{-- gerentes de grupo --}}
     <div class="col-md-4">
       @can('manager')
         <div class="card h-100">
-          <form method="post" id="form-setores" action="{{ route('setor.editarGerentes') }}">
+          <form method="post" id="form-grupos" action="{{ route('grupo.editarGerentes') }}">
             @csrf
             @method('put')
             <div class="card-header h5 py-2">
               Gerentes
               @include('partials.codpes-adicionar-btn')
-              <div class="small text-secondary">Pessoas que podem criar/remover setores</div>
+              <div class="small text-secondary">Pessoas que podem criar/remover grupos</div>
             </div>
             <div class="card-body py-1">
               @foreach ($gerentes as $gerente)

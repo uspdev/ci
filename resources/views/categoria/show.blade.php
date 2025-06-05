@@ -21,7 +21,7 @@
           <strong>Nome:</strong> {{ $categoria->nome }} - {{ $categoria->abreviacao }}
         </div>
         <div class="col-md-6">
-          <strong>Setor:</strong> {{ $categoria->setor->name }}
+          <strong>Grupo:</strong> {{ $categoria->grupo->name }}
         </div>
         <div class="col-md-6 mt-2">
           <strong>Criado em:</strong> {{ $categoria->created_at->format('d/m/Y H:i') }}

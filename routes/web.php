@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SetorController;
+use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\TemplateController;
 
@@ -27,16 +27,16 @@ Route::fallback(function(){
     return view('errors.404');
  });
 
-Route::get('setor', [SetorController::class, 'index'])->name('setor.index');
-Route::get('setor/create', [SetorController::class, 'create'])->name('setor.create');
-Route::post('setor/create', [SetorController::class, 'store'])->name('setor.store');
-Route::get('setor/edit/{setor_id}', [SetorController::class, 'edit'])->name('setor.edit');
-Route::put('setor/edit/{setor_id}', [SetorController::class, 'update'])->name('setor.update');
-Route::get('setor/{setor_id}', [SetorController::class, 'show'])->name('setor.show');
-Route::delete('setor/{setor_id}', [SetorController::class, 'destroy'])->name('setor.destroy');
-Route::get('setor/select/{id}', [SetorController::class, 'selectSetor'])->name('setor.select');
-Route::put('/setor/{id}/editarResponsavel', [SetorController::class, 'editarResponsavel'])->name('setor.editarResponsavel');
-Route::put('/setor/editarGerentes', [SetorController::class, 'editarGerentes'])->name('setor.editarGerentes');
+Route::get('grupo', [GrupoController::class, 'index'])->name('grupo.index');
+Route::get('grupo/create', [GrupoController::class, 'create'])->name('grupo.create');
+Route::post('grupo/create', [GrupoController::class, 'store'])->name('grupo.store');
+Route::get('grupo/edit/{grupo_id}', [GrupoController::class, 'edit'])->name('grupo.edit');
+Route::put('grupo/edit/{grupo_id}', [GrupoController::class, 'update'])->name('grupo.update');
+Route::get('grupo/{grupo_id}', [GrupoController::class, 'show'])->name('grupo.show');
+Route::delete('grupo/{grupo_id}', [GrupoController::class, 'destroy'])->name('grupo.destroy');
+Route::get('grupo/select/{id}', [GrupoController::class, 'selectGrupo'])->name('grupo.select');
+Route::put('/grupo/{id}/editarResponsavel', [GrupoController::class, 'editarResponsavel'])->name('grupo.editarResponsavel');
+Route::put('/grupo/editarGerentes', [GrupoController::class, 'editarGerentes'])->name('grupo.editarGerentes');
 
 Route::prefix('categorias')->name('categoria.')->group(function () {
     Route::get('/', [CategoriaController::class, 'index'])->name('index');

@@ -24,7 +24,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Gate::define('setorManager', function (User $user) {
+        Gate::define('grupoManager', function (User $user) {
             $hasPermission = $user
                 ->permissions()
                 ->where(function ($query) {

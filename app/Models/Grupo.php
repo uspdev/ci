@@ -9,11 +9,11 @@ use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 
 
-class Setor extends Model
+class Grupo extends Model
 {
     use HasFactory;
 
-    protected $table = 'setors';
+    protected $table = 'grupos';
 
     protected $fillable = [
         'name',
@@ -22,61 +22,61 @@ class Setor extends Model
 
     public function categorias(): HasMany
     {
-        return $this->hasMany(Categoria::class, 'setor_id');
+        return $this->hasMany(Categoria::class, 'grupo_id');
     }
 
     public function documentos(): HasMany
     {
-        return $this->hasMany(Documento::class, 'setor_id');
+        return $this->hasMany(Documento::class, 'grupo_id');
     }
 
     /**
-     * Define variável de sessão para o setor ativo
+     * Define variável de sessão para o grupo ativo
      *
-     * Busca o primeiro setor cadastrado no banco de dados e armazena seu ID na sessão.
-     * Caso não exista nenhum setor, define o valor como string vazia.
+     * Busca o primeiro grupo cadastrado no banco de dados e armazena seu ID na sessão.
+     * Caso não exista nenhum grupo, define o valor como string vazia.
      *
      * @return void
      */
-    public static function setSetorSession()
+    public static function setGrupoSession()
     {
-        if ($setor = Setor::first()) {
+        if ($grupo = Grupo::first()) {
             session([
-                'setor_id' => $setor->id
+                'grupo_id' => $grupo->id
             ]);
         } else {
             session([
-                'setor_id' => ''
+                'grupo_id' => ''
             ]);
         }
     }
 
     /**
-     * Lista os setores que um usuário pode gerenciar
+     * Lista os grupos que um usuário pode gerenciar
      *
-     * Retorna todos os setores para os quais o usuário possui permissões de gerenciamento
+     * Retorna todos os grupos para os quais o usuário possui permissões de gerenciamento
      * Se nenhum usuário for passado como parâmetro, utiliza o usuário autenticado
      *
      * @param  User|null  $user
-     * @return \Illuminate\Database\Eloquent\Collection $setores
+     * @return \Illuminate\Database\Eloquent\Collection $grupos
      */
-    public static function listarSetoresPorUsuario(?User $user = null)
+    public static function listarGruposPorUsuario(?User $user = null)
     {
         $user = $user ?? Auth::user();
         $permissions = $user->permissions->filter(function ($permission) {
             return strpos($permission->name, 'manager_') === 0;
         });
 
-        $setorIds = $permissions->map(function ($role) {
+        $grupoIds = $permissions->map(function ($role) {
             return str_replace('manager_', '', $role->name);
         });
 
-        $setores = Setor::whereIn('id', $setorIds)->get();
-        return $setores;
+        $grupos = Grupo::whereIn('id', $grupoIds)->get();
+        return $grupos;
     }
 
     /**
-     * Retorna os usuários responsáveis por gerenciar esse setor,  usuários que possuem a permissão referente a este setor.
+     * Retorna os usuários responsáveis por gerenciar esse grupo,  usuários que possuem a permissão referente a este grupo.
      *
      * @return \Illuminate\Database\Eloquent\Collection $users
      */

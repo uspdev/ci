@@ -3,7 +3,7 @@
 @section('content')
   <div class="card">
     <div class="card-header">
-      <h4 class="mb-0">Nova Categoria - {{ $setor->name }}</h4>
+      <h4 class="mb-0">Nova Categoria - {{ $grupo->name }}</h4>
     </div>
     <div class="card-body">
       <form action="{{ route('categoria.store') }}" method="POST">

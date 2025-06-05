@@ -27,7 +27,7 @@ class Documento extends Model
         'categoria_id',
         'user_id',
         'finalizer_user_id',
-        'setor_id',
+        'grupo_id',
         'template_id',
     ];
 
@@ -53,7 +53,7 @@ class Documento extends Model
         'categoria_id',
         'user_id',
         'finalizer_user_id',
-        'setor_id',
+        'grupo_id',
         'template_id',
     ])
         ->setDescriptionForEvent(function(string $eventName) {
@@ -67,9 +67,9 @@ class Documento extends Model
         });
     }
 
-    public function setor(): BelongsTo
+    public function grupo(): BelongsTo
     {
-        return $this->belongsTo(Setor::class, 'setor_id');
+        return $this->belongsTo(Grupo::class, 'grupo_id');
     }
 
     public function categoria(): BelongsTo

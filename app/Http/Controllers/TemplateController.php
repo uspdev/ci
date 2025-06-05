@@ -13,7 +13,7 @@ class TemplateController extends Controller
 {
     public function index()
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
         \UspTheme::activeUrl('templates');
 
         if (Gate::allows('manager')) {
@@ -27,7 +27,7 @@ class TemplateController extends Controller
 
     public function create()
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
         $categorias = Categoria::all();
 
         return view('template.create', compact('categorias'));
@@ -35,7 +35,7 @@ class TemplateController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
 
         $request->validate([
             'nome' => 'required|string|max:255',

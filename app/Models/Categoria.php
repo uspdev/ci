@@ -15,12 +15,12 @@ class Categoria extends Model
     protected $fillable = [
         'nome',
         'abreviacao',
-        'setor_id',
+        'grupo_id',
     ];
 
-    public function setor(): BelongsTo
+    public function grupo(): BelongsTo
     {
-        return $this->belongsTo(Setor::class, 'setor_id');
+        return $this->belongsTo(Grupo::class, 'grupo_id');
     }
 
     public function templates(): BelongsToMany

@@ -24,7 +24,7 @@ $menu = [
 
 $right_menu = [
     [
-        'key' => 'setores',
+        'key' => 'grupos',
     ],
     [
         // menu utilizado para views da biblioteca senhaunica-socialite.

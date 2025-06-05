@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Setor;
+use App\Models\Grupo;
 use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
@@ -11,32 +11,32 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 
-class SetorController extends Controller
+class GrupoController extends Controller
 {
     /**
-     * Exibe a lista de setores conforme as permissões do usuário
+     * Exibe a lista de grupos conforme as permissões do usuário
      *
      * @return \Illuminate\View\View
      */
     public function index()
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
 
         if (Gate::allows('manager')) {
-            $setores = Setor::all();
+            $grupos = Grupo::all();
         } else {
-            $setores = Setor::listarSetoresPorUsuario();
+            $grupos = Grupo::listarGruposPorUsuario();
         }
 
         $gerentes = User::whereHas('permissions', function ($query) {
             $query->where('name', 'manager');
         })->get();
 
-        return view('setor.index', compact('setores', 'gerentes'));
+        return view('grupo.index', compact('grupos', 'gerentes'));
     }
 
     /**
-     * Exibe o formulário de criação de novo setor
+     * Exibe o formulário de criação de novo grupo
      *
      * @return \Illuminate\View\View
      */
@@ -44,11 +44,11 @@ class SetorController extends Controller
     {
         $this->authorize('manager');
 
-        return view('setor.create');
+        return view('grupo.create');
     }
 
     /**
-     * Armazena um novo setor no banco de dados, cria permissão específica e associa ao criador
+     * Armazena um novo grupo no banco de dados, cria permissão específica e associa ao criador
      * 
      * @param Request $request Dados do formulário
      * @return \Illuminate\Http\RedirectResponse
@@ -62,22 +62,22 @@ class SetorController extends Controller
             'description' => 'nullable|string',
         ]);
         
-        $setor = Setor::create([
+        $grupo = Grupo::create([
             'name' => $request->name, 
             'description' => $request->description
         ]);
 
-        $permission = Permission::firstOrCreate(['name' => 'manager_' . $setor->id]);
+        $permission = Permission::firstOrCreate(['name' => 'manager_' . $grupo->id]);
 
-        $this->criarCategoriasPadrao($setor);
+        $this->criarCategoriasPadrao($grupo);
 
-        Setor::setSetorSession();
+        Grupo::setGrupoSession();
 
-        session()->flash('alert-success', 'Setor criado com sucesso! Categorias padrão (Memorando e Ofício) foram criadas automaticamente.');
-        return redirect()->route('setor.edit', $setor);
+        session()->flash('alert-success', 'Grupo criado com sucesso! Categorias padrão (Memorando e Ofício) foram criadas automaticamente.');
+        return redirect()->route('grupo.edit', $grupo);
     }
 
-    private function criarCategoriasPadrao(Setor $setor)
+    private function criarCategoriasPadrao(Grupo $grupo)
     {
         $categoriasPadrao = [
             'Memorando' => 'MEM',
@@ -88,117 +88,117 @@ class SetorController extends Controller
             Categoria::create([
                 'nome' => $nomeCategoria,
                 'abreviacao' => $abreviacao,
-                'setor_id' => $setor->id
+                'grupo_id' => $grupo->id
             ]);
         }
     }
 
     /**
-     * Verifica permissão específica do setor ou acesso de admin e exibe o formulário de edição de setor
+     * Verifica permissão específica do grupo ou acesso de admin e exibe o formulário de edição de grupo
      * 
-     * @param int $setor_id ID do setor
+     * @param int $grupo_id ID do grupo
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function edit($setor_id)
+    public function edit($grupo_id)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $setor_id) && ! Gate::allows('manager'))) {
-            return redirect()->route('setor.show', ['setor_id' => $setor_id]);
+        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo_id) && ! Gate::allows('manager'))) {
+            return redirect()->route('grupo.show', ['grupo_id' => $grupo_id]);
         }
 
-        $setor = Setor::findOrFail($setor_id);
-        return view('setor.edit', compact('setor'));
+        $grupo = Grupo::findOrFail($grupo_id);
+        return view('grupo.edit', compact('grupo'));
     }
 
     /**
-     * Atualiza os dados de um setor existente
+     * Atualiza os dados de um grupo existente
      * 
      * @param Request $request
-     * @param int $setor_id
+     * @param int $grupo_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $setor_id)
+    public function update(Request $request, $grupo_id)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $setor_id) && ! Gate::allows('manager'))) {
-            return redirect()->route('setor.show', ['setor_id' => $setor_id]);
+        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo_id) && ! Gate::allows('manager'))) {
+            return redirect()->route('grupo.show', ['grupo_id' => $grupo_id]);
         }
-        $setor = Setor::findOrFail($setor_id);
+        $grupo = Grupo::findOrFail($grupo_id);
 
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
 
-        $setor->update([
+        $grupo->update([
             'name' => $request->name,
             'description' => $request->description
         ]);
-        Setor::setSetorSession();
-        session()->flash('alert-success', 'Setor atualizado com sucesso!');
-        return redirect()->route('setor.edit', ['setor_id' => $setor_id]);
+        Grupo::setGrupoSession();
+        session()->flash('alert-success', 'Grupo atualizado com sucesso!');
+        return redirect()->route('grupo.edit', ['grupo_id' => $grupo_id]);
     }
 
     /**
-     * Remove permanentemente um setor, a permissão associada e revoga acesso de todos usuários
+     * Remove permanentemente um grupo, a permissão associada e revoga acesso de todos usuários
      * 
-     * @param int $setor_id
+     * @param int $grupo_id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($setor_id)
+    public function destroy($grupo_id)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $setor_id) && ! Gate::allows('manager'))) {
-            return redirect()->route('setor.show', ['setor_id' => $setor_id]);
+        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo_id) && ! Gate::allows('manager'))) {
+            return redirect()->route('grupo.show', ['grupo_id' => $grupo_id]);
         }
-        $setor = Setor::findOrFail($setor_id);
+        $grupo = Grupo::findOrFail($grupo_id);
 
-        $permission = Permission::findByName('manager_' . $setor->id);
+        $permission = Permission::findByName('manager_' . $grupo->id);
         $permission->users()->detach();
         $permission->delete();
 
-        $setor->delete();
-        Setor::setSetorSession();
+        $grupo->delete();
+        Grupo::setGrupoSession();
 
-        session()->flash('alert-success', 'Setor removido com sucesso!');
-        return redirect()->route('setor.index');
+        session()->flash('alert-success', 'Grupo removido com sucesso!');
+        return redirect()->route('grupo.index');
     }
 
     /**
-     * Define o setor ativo na sessão
+     * Define o grupo ativo na sessão
      *
      * @param int $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function selectSetor($id)
+    public function selectGrupo($id)
     {
-        $setor = Setor::find($id);
+        $grupo = Grupo::find($id);
 
         session([
-            'setor_id' => $setor->id
+            'grupo_id' => $grupo->id
         ]);
 
         return redirect(route('documento.index'));
     }
 
     /**
-     * Gerencia adição/remoção de responsáveis pelo setor
+     * Gerencia adição/remoção de responsáveis pelo grupo
      * 
-     * Manipula permissões específicas do setor (manager_{id})
+     * Manipula permissões específicas do grupo (manager_{id})
 
-     * @param int $setor_id
+     * @param int $grupo_id
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function editarResponsavel($setor_id, Request $request)
+    public function editarResponsavel($grupo_id, Request $request)
     {
         $codpes_rem = $request->input('codpes_rem');
         $codpes_add = $request->input('codpes_add');
-        $setor_id = $request->input('setor_id');
+        $grupo_id = $request->input('grupo_id');
 
-        $adminPermission = 'manager_' . $setor_id;
+        $adminPermission = 'manager_' . $grupo_id;
         $user = Auth::user();
 
         if (! $user->hasPermissionTo($adminPermission) && ! Gate::allows('manager')) {
-            return response()->json(['alert-danger' => 'Você não tem permissão para gerenciar este setor.'], 403);
+            return response()->json(['alert-danger' => 'Você não tem permissão para gerenciar este grupo.'], 403);
         }
 
         if ($codpes_rem) {
@@ -217,7 +217,7 @@ class SetorController extends Controller
             }
         }
 
-        return redirect()->route('setor.edit', ['setor_id' => $setor_id]);
+        return redirect()->route('grupo.edit', ['grupo_id' => $grupo_id]);
     }
 
     /**
@@ -254,6 +254,6 @@ class SetorController extends Controller
             }
         }
 
-        return redirect()->route('setor.index');
+        return redirect()->route('grupo.index');
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Documento;
 use App\Models\Categoria;
-use App\Models\Setor;
+use App\Models\Grupo;
 use App\Models\Template;
 use App\Models\Anexo;
 use Illuminate\Http\Request;
@@ -18,15 +18,15 @@ class DocumentoController extends Controller
 {
     /**
      * Gera código automático para documento
-     * Formato: CATEGORIA Nº XXX/AAAA/SETOR-e
+     * Formato: CATEGORIA Nº XXX/AAAA/GRUPO-e
      */
-    private function gerarCodigo(Categoria $categoria, int $setorId): string
+    private function gerarCodigo(Categoria $categoria, int $grupoId): string
     {
         $ano = date('Y');
-        $setor = Setor::findOrFail($setorId);
+        $grupo = Grupo::findOrFail($grupoId);
         
         $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
-            ->where('setor_id', $setorId)
+            ->where('grupo_id', $grupoId)
             ->whereYear('created_at', $ano)
             ->orderBy('id', 'desc')
             ->first();
@@ -39,31 +39,31 @@ class DocumentoController extends Controller
 
         $categoriaAbrev = iconv('UTF-8', 'ASCII//TRANSLIT', $categoria->abreviacao);
         $numero = str_pad($proximoNumero, 3, '0', STR_PAD_LEFT);
-        $setorNome = strtoupper($setor->name);
+        $grupoNome = strtoupper($grupo->name);
         
-        return "{$categoriaAbrev} Nº {$numero}/{$ano}/{$setorNome}-e";
+        return "{$categoriaAbrev} Nº {$numero}/{$ano}/{$grupoNome}-e";
     }
 
 
     /**
-     * Exibe a lista de documentos do setor ativo
+     * Exibe a lista de documentos do grupo ativo
      */
     public function index(Request $request)
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
         \UspTheme::activeUrl('documentos');
 
-        $setorId = session('setor_id');
+        $grupoId = session('grupo_id');
         
-        if (!$setorId) {
-            return redirect()->route('setor.index')->with('alert-warning', 'Selecione um setor primeiro.');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $setorId)) {
-            abort(403, 'Você não tem permissão para acessar este setor.');
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para acessar este grupo.');
         }
 
-        $query = Documento::where('setor_id', $setorId)->with(['categoria', 'template']);
+        $query = Documento::where('grupo_id', $grupoId)->with(['categoria', 'template']);
 
         if ($request->filled('categoria_id')) {
             $query->where('categoria_id', $request->categoria_id);
@@ -71,7 +71,7 @@ class DocumentoController extends Controller
 
         $documentos = $query->get();
 
-        $categorias = Categoria::where('setor_id', $setorId)->get();
+        $categorias = Categoria::where('grupo_id', $grupoId)->get();
         return view('documento.index', compact('documentos', 'categorias'));
     }
 
@@ -80,19 +80,19 @@ class DocumentoController extends Controller
      */
     public function create()
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
 
-        $setorId = session('setor_id');
+        $grupoId = session('grupo_id');
         
-        if (!$setorId) {
-            return redirect()->route('setor.index')->with('alert-warning', 'Selecione um setor primeiro.');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $setorId)) {
-            abort(403, 'Você não tem permissão para criar documentos neste setor.');
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para criar documentos neste grupo.');
         }
 
-        $categorias = Categoria::where('setor_id', $setorId)->get();
+        $categorias = Categoria::where('grupo_id', $grupoId)->get();
         $templates = Template::all();
 
         return view('documento.create', compact('categorias', 'templates'));
@@ -103,16 +103,16 @@ class DocumentoController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
 
-        $setorId = session('setor_id');
+        $grupoId = session('grupo_id');
         
-        if (!$setorId) {
-            return redirect()->route('setor.index')->with('alert-warning', 'Selecione um setor primeiro.');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $setorId)) {
-            abort(403, 'Você não tem permissão para criar documentos neste setor.');
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para criar documentos neste grupo.');
         }
 
         $request->validate([
@@ -127,11 +127,11 @@ class DocumentoController extends Controller
         ]);
 
         $categoria = Categoria::findOrFail($request->categoria_id);
-        if ($categoria->setor_id != $setorId) {
-            abort(403, 'Categoria não pertence ao setor selecionado.');
+        if ($categoria->grupo_id != $grupoId) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
         $categoria = Categoria::find($request->categoria_id);
-        $codigo = $this->gerarCodigo($categoria, $setorId);
+        $codigo = $this->gerarCodigo($categoria, $grupoId);
 
         $documento = Documento::create([
             'codigo' => $codigo,
@@ -143,7 +143,7 @@ class DocumentoController extends Controller
             'categoria_id' => $request->categoria_id,
             'template_id' => $request->template_id,
             'anexo_id' => $request->anexo_id,
-            'setor_id' => $setorId,
+            'grupo_id' => $grupoId,
             'user_id' => Auth::id(),
         ]);
 
@@ -159,9 +159,9 @@ class DocumentoController extends Controller
      */
     public function show($id)
     {
-        $documento = Documento::with(['categoria.setor', 'template', 'anexos'])->findOrFail($id);
+        $documento = Documento::with(['categoria.grupo', 'template', 'anexos'])->findOrFail($id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar este documento.');
         }
 
@@ -178,9 +178,9 @@ class DocumentoController extends Controller
      */
     public function edit($id)
     {
-        $documento = Documento::with(['categoria.setor', 'template', 'anexos'])->findOrFail($id);
+        $documento = Documento::with(['categoria.grupo', 'template', 'anexos'])->findOrFail($id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar este documento.');
         }
 
@@ -189,11 +189,11 @@ class DocumentoController extends Controller
             return redirect()->route('documento.show', $id);
         }
 
-        $setores = Gate::allows('manager') ? Setor::all() : Setor::listarSetoresPorUsuario();
-        $categorias = Categoria::whereIn('setor_id', $setores->pluck('id'))->get();
+        $grupos = Gate::allows('manager') ? Grupo::all() : Grupo::listarGruposPorUsuario();
+        $categorias = Categoria::whereIn('grupo_id', $grupos->pluck('id'))->get();
         $templates = Template::all();
 
-        return view('documento.create', compact('documento', 'setores', 'categorias', 'templates'));
+        return view('documento.create', compact('documento', 'grupos', 'categorias', 'templates'));
     }
 
     /**
@@ -207,7 +207,7 @@ class DocumentoController extends Controller
     {
         $documento = Documento::findOrFail($id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar este documento.');
         }
 
@@ -228,7 +228,7 @@ class DocumentoController extends Controller
 
         $categoria = Categoria::findOrFail($request->categoria_id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para mover este documento para esta categoria.');
         }
 
@@ -240,7 +240,7 @@ class DocumentoController extends Controller
             'mensagem' => $request->mensagem,
             'categoria_id' => $request->categoria_id,
             'template_id' => $request->template_id,
-            'setor_id' => $categoria->setor_id,
+            'grupo_id' => $categoria->grupo_id,
         ]);
 
         session()->flash('alert-success', 'Documento atualizado com sucesso!');
@@ -257,7 +257,7 @@ class DocumentoController extends Controller
     {
         $documento = Documento::findOrFail($id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para finalizar este documento.');
         }
 
@@ -286,7 +286,7 @@ class DocumentoController extends Controller
     {
         $documento = Documento::findOrFail($id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para excluir este documento.');
         }
 
@@ -316,7 +316,7 @@ class DocumentoController extends Controller
     {
         $documento = Documento::findOrFail($id);
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para adicionar anexos a este documento.');
         }
 
@@ -354,7 +354,7 @@ class DocumentoController extends Controller
 
     public function gerarPdf($id)
     {
-        $documento = \App\Models\Documento::with('template', 'categoria', 'categoria.setor')->findOrFail($id);
+        $documento = \App\Models\Documento::with('template', 'categoria', 'categoria.grupo')->findOrFail($id);
 
         if (!$documento->template) {
             return redirect()->back()->with('alert-danger', 'Documento não possui template associado.');
@@ -373,7 +373,7 @@ class DocumentoController extends Controller
             'ano'         => $documento->data_documento->format('Y'),
             'destinatario'=> $documento->destinatario,
             'remetente'   => $documento->remetente,
-            'setor'       => $documento->categoria->setor->name ?? '',
+            'grupo'       => $documento->categoria->grupo->name ?? '',
             'data'        => $documento->data_documento->format('d/m/Y'),
             'assunto'     => $documento->assunto,
             'mensagem'    => $documento->mensagem,
@@ -389,7 +389,7 @@ class DocumentoController extends Controller
             ->where('tipo_anexo', 'gerado')
             ->where('nome_arquivo', $htmlHash . '.pdf')
             ->first();
-        $docName = $documento->categoria->setor->name . '_' . $documento->categoria->abreviacao . '_' . $codigo . '.pdf';
+        $docName = $documento->categoria->grupo->name . '_' . $documento->categoria->abreviacao . '_' . $codigo . '.pdf';
 
         if (!$anexoExistente) {
             $pdf = Pdf::loadHTML($conteudo);

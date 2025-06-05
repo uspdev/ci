@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categoria;
-use App\Models\Setor;
+use App\Models\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -11,29 +11,29 @@ use Illuminate\Support\Facades\Gate;
 class CategoriaController extends Controller
 {
     /**
-     * Exibe a lista de categorias do setor ativo
+     * Exibe a lista de categorias do grupo ativo
      *
      * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
         \UspTheme::activeUrl('categorias');
 
-        $setorId = session('setor_id');
+        $grupoId = session('grupo_id');
         
-        if (!$setorId) {
-            return redirect()->route('setor.index')->with('alert-warning', 'Selecione um setor primeiro.');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $setorId)) {
-            abort(403, 'Você não tem permissão para acessar este setor.');
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para acessar este grupo.');
         }
 
-        $categorias = Categoria::where('setor_id', $setorId)->get();
+        $categorias = Categoria::where('grupo_id', $grupoId)->get();
 
-        $setor = Setor::findOrFail($setorId);
-        return view('categoria.index', compact('categorias', 'setor'));
+        $grupo = Grupo::findOrFail($grupoId);
+        return view('categoria.index', compact('categorias', 'grupo'));
     }
 
 
@@ -44,21 +44,21 @@ class CategoriaController extends Controller
      */
     public function create()
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
 
-        $setorId = session('setor_id');
+        $grupoId = session('grupo_id');
         
-        if (!$setorId) {
-            return redirect()->route('setor.index')->with('alert-warning', 'Selecione um setor primeiro.');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $setorId)) {
-            abort(403, 'Você não tem permissão para criar categorias neste setor.');
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para criar categorias neste grupo.');
         }
 
-        $setor = Setor::findOrFail($setorId);
+        $grupo = Grupo::findOrFail($grupoId);
 
-        return view('categoria.create', compact('setor'));
+        return view('categoria.create', compact('grupo'));
     }
 
     /**
@@ -69,27 +69,27 @@ class CategoriaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('setorManager');
+        $this->authorize('grupoManager');
 
-        $setorId = session('setor_id');
+        $grupoId = session('grupo_id');
         
-        if (!$setorId) {
-            return redirect()->route('setor.index')->with('alert-warning', 'Selecione um setor primeiro.');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $setorId)) {
-            abort(403, 'Você não tem permissão para criar categorias neste setor.');
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para criar categorias neste grupo.');
         }
 
         $request->validate([
-            'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,setor_id,' . $setorId,
+            'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
             'abreviacao' => 'required|string|max:10',
         ]);
 
         $categoria = Categoria::create([
             'nome' => $request->nome,
             'abreviacao' => $request->abreviacao,
-            'setor_id' => $setorId,
+            'grupo_id' => $grupoId,
         ]);
 
         session()->flash('alert-success', 'Categoria criada com sucesso!');
@@ -104,12 +104,12 @@ class CategoriaController extends Controller
      */
     public function show($id)
     {
-        $categoria = Categoria::with(['setor', 'templates', 'documentos'])->findOrFail($id);
-        if ($categoria->setor_id != session('setor_id')) {
+        $categoria = Categoria::with(['grupo', 'templates', 'documentos'])->findOrFail($id);
+        if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar esta categoria.');
         }
 
@@ -126,11 +126,11 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::findOrFail($id);
 
-        if ($categoria->setor_id != session('setor_id')) {
+        if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar esta categoria.');
         }
 
@@ -148,16 +148,16 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::findOrFail($id);
 
-        if ($categoria->setor_id != session('setor_id')) {
+        if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar esta categoria.');
         }
 
         $request->validate([
-            'nome' => 'required|string|max:255|unique:categorias,nome,' . $id . ',id,setor_id,' . $categoria->setor_id,
+            'nome' => 'required|string|max:255|unique:categorias,nome,' . $id . ',id,grupo_id,' . $categoria->grupo_id,
             'abreviacao' => 'required|string|max:10',
         ]);
 
@@ -180,11 +180,11 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::findOrFail($id);
 
-        if ($categoria->setor_id != session('setor_id')) {
+        if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->setor_id)) {
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para excluir esta categoria.');
         }
 

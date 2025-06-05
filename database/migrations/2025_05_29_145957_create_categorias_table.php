@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->string('abreviacao');
-            $table->unsignedBigInteger('setor_id');
+            $table->unsignedBigInteger('grupo_id');
             $table->timestamps();
-            $table->foreign('setor_id')->references('id')->on('setors')->onDelete('cascade');
-            $table->unique(['nome', 'setor_id'], 'unique_categoria_setor');
+            $table->foreign('grupo_id')->references('id')->on('grupos')->onDelete('cascade');
+            $table->unique(['nome', 'grupo_id'], 'unique_categoria_grupo');
         });
     }
 

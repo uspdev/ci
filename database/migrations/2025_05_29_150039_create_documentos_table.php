@@ -24,11 +24,11 @@ return new class extends Migration
             $table->unsignedBigInteger('categoria_id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('finalizer_user_id')->nullable();
-            $table->unsignedBigInteger('setor_id')->nullable();
+            $table->unsignedBigInteger('grupo_id')->nullable();
             $table->unsignedBigInteger('template_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('setor_id')->references('id')->on('setors');
+            $table->foreign('grupo_id')->references('id')->on('grupos');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('finalizer_user_id')->references('id')->on('users');
         });
