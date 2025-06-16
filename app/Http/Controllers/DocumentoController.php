@@ -37,7 +37,7 @@ class DocumentoController extends Controller
     {
         $this->authorize('grupoManager');
         \UspTheme::activeUrl('documentos');
-
+        
         $grupoId = session('grupo_id');
         
         if (!$grupoId) {
@@ -60,10 +60,11 @@ class DocumentoController extends Controller
         return view('documento.index', compact('documentos', 'categorias'));
     }
 
+
     /**
      * Exibe o formulário de criação de novo documento
      */
-    public function create()
+    public function create($categoria)
     {
         $this->authorize('grupoManager');
 
@@ -77,25 +78,21 @@ class DocumentoController extends Controller
             abort(403, 'Você não tem permissão para criar documentos neste grupo.');
         }
 
-        $categorias = Categoria::where('grupo_id', $grupoId)->get();
-        $templates = Template::all();
-
-        return view('documento.create', compact('categorias', 'templates'));
+        $templates = Categoria::findOrFail($categoria)->templates;
+        
+        return view('documento.create', compact('templates', 'categoria'));
     }
 
     /**
      * Armazena um novo documento no banco de dados
      */
-    public function store(Request $request)
+    public function store(Request $request, $categoria)
     {
         $this->authorize('grupoManager');
-
         $grupoId = session('grupo_id');
-        
         if (!$grupoId) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
             abort(403, 'Você não tem permissão para criar documentos neste grupo.');
         }
@@ -161,7 +158,7 @@ class DocumentoController extends Controller
      * @param int $id
      * @return \Illuminate\View\View
      */
-    public function edit($id)
+    public function edit($categoria, $id)
     {
         $documento = Documento::with(['categoria.grupo', 'template', 'anexos'])->findOrFail($id);
 
@@ -174,11 +171,9 @@ class DocumentoController extends Controller
             return redirect()->route('documento.show', $id);
         }
 
-        $grupos = Gate::allows('manager') ? Grupo::all() : Grupo::listarGruposPorUsuario();
-        $categorias = Categoria::whereIn('grupo_id', $grupos->pluck('id'))->get();
-        $templates = Template::all();
+        $templates = Categoria::findOrFail($categoria)->templates;
 
-        return view('documento.create', compact('documento', 'grupos', 'categorias', 'templates'));
+        return view('documento.create', compact('documento', 'categoria', 'templates'));
     }
 
     /**
