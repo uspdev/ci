@@ -274,6 +274,20 @@ class DocumentoController extends Controller
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
+        if ($request->hasFile('anexos')) {
+            foreach ($request->file('anexos') as $file) {
+                $path = $file->store('documentos/anexos', 'public');
+                $documento->anexos()->create([
+                    'nome_original' => $file->getClientOriginalName(),
+                    'tamanho' => $file->getSize(),
+                    'tipo_mime' => $file->getClientMimeType(),
+                    'tipo_anexo' => 'upload',
+                    'caminho' => $path,
+                    'user_id' => Auth::id(),
+                ]);
+            }
+        }
+
         $categoria = Categoria::findOrFail($documento->categoria_id);
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
