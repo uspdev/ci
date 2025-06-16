@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->string('abreviacao');
+            $table->string('prefixo');
+            $table->boolean('controlar_sequencial');
             $table->unsignedBigInteger('grupo_id');
             $table->timestamps();
             $table->foreign('grupo_id')->references('id')->on('grupos')->onDelete('cascade');

@@ -14,7 +14,8 @@ class Categoria extends Model
 
     protected $fillable = [
         'nome',
-        'abreviacao',
+        'prefixo',
+        'controlar_sequencial',
         'grupo_id',
     ];
 

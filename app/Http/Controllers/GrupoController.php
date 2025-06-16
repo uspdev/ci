@@ -84,10 +84,11 @@ class GrupoController extends Controller
             'Ofício' => 'OFC'
         ];
 
-        foreach ($categoriasPadrao as $nomeCategoria => $abreviacao) {
+        foreach ($categoriasPadrao as $nomeCategoria => $prefixo) {
             Categoria::create([
                 'nome' => $nomeCategoria,
-                'abreviacao' => $abreviacao,
+                'prefixo' => $prefixo,
+                'controlar_sequencial' => true,
                 'grupo_id' => $grupo->id
             ]);
         }

@@ -83,12 +83,13 @@ class CategoriaController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
-            'abreviacao' => 'required|string|max:10',
+            'prefixo' => 'required|string|max:10',
         ]);
 
         $categoria = Categoria::create([
             'nome' => $request->nome,
-            'abreviacao' => $request->abreviacao,
+            'prefixo' => $request->prefixo,
+            'controlar_sequencial' => $request->controlar_sequencial ?? false,
             'grupo_id' => $grupoId,
         ]);
 
@@ -158,12 +159,13 @@ class CategoriaController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,' . $id . ',id,grupo_id,' . $categoria->grupo_id,
-            'abreviacao' => 'required|string|max:10',
+            'prefixo' => 'required|string|max:10',
         ]);
 
         $categoria->update([
             'nome' => $request->nome,
-            'abreviacao' => $request->abreviacao,
+            'prefixo' => $request->prefixo,
+            'controlar_sequencial' => $request->controlar_sequencial ?? false
         ]);
 
         session()->flash('alert-success', 'Categoria atualizada com sucesso!');

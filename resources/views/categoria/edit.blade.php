@@ -16,9 +16,17 @@
             value="{{ old('nome', $categoria->nome) }}" required>
         </div>
         <div class="mb-3">
-          <label for="abreviacao" class="form-label">Abreviação</label>
-          <input type="text" class="form-control" id="abreviacao" name="abreviacao"
-            value="{{ old('abreviacao', $categoria->abreviacao) }}" required>
+          <label for="prefixo" class="form-label">Prefixo</label>
+          <input type="text" class="form-control" id="prefixo" name="prefixo"
+            value="{{ old('prefixo', $categoria->prefixo) }}" required>
+        </div>
+
+        <div class="form-check mb-3">
+          <input type="checkbox" class="form-check-input" id="controlar_sequencial" name="controlar_sequencial"
+            value="1" {{ old('controlar_sequencial', $categoria->controlar_sequencial) ? 'checked' : '' }}>
+          <label class="form-check-label" for="controlar_sequencial">
+            Controlar Sequencial
+          </label>
         </div>
 
         <div class="d-flex gap-2">
