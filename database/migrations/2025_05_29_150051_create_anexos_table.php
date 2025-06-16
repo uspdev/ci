@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('documento_id');
             $table->string('nome_original');
-            $table->string('nome_arquivo');
             $table->string('caminho', 500);
             $table->string('tipo_mime', 100);
             $table->bigInteger('tamanho');

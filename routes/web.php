@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\TemplateController;
-
+use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\DocumentoController;
 
 /*
@@ -60,6 +60,11 @@ Route::prefix('documentos')->name('documento.')->group(function () {
     Route::post('/{id}/anexo', [DocumentoController::class, 'uploadAnexo'])->name('anexo.upload');
     Route::get('/atividades/{id}', [DocumentoController::class, 'detalharAtividade'])->name('atividade');
     Route::get('{id}/pdf', [DocumentoController::class, 'gerarPdf'])->name('pdf');
+});
+
+Route::prefix('anexos')->name('anexo.')->group(function () {
+    Route::post('/{id}', [AnexoController::class, 'upload'])->name('upload');
+    Route::delete('/{id}', [AnexoController::class, 'destroy'])->name('destroy');
 });
 
 Route::prefix('templates')->name('template.')->group(function () {

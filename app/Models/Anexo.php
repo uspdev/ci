@@ -13,7 +13,6 @@ class Anexo extends Model
     protected $fillable = [
         'documento_id',
         'nome_original',
-        'nome_arquivo',
         'caminho',
         'tipo_mime',
         'tamanho',

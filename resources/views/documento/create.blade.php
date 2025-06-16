@@ -117,6 +117,33 @@
           </a>
         </div>
       </form>
+
+      @if (isset($documento) && $documento->anexos->count() > 0)
+        <div class="mt-3">
+          <h5>Anexos Existentes</h5>
+          <div class="list-group">
+            @foreach ($documento->anexos as $anexo)
+              <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ $anexo->nome_original }}</strong>
+                  <small class="text-muted">({{ number_format($anexo->tamanho / 1024, 2) }} KB)</small>
+                </div>
+                <div>
+                  <span class="badge bg-secondary text-white">{{ $anexo->tipo_anexo }}</span>
+                  <form action="{{ route('anexo.destroy', $anexo->id) }}" method="POST" style="display:inline;"
+                    onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger ms-2">
+                      <i class="fas fa-trash"></i> Excluir
+                    </button>
+                  </form>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      @endif
     </div>
   </div>
 @endsection
