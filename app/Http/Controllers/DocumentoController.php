@@ -123,17 +123,80 @@ class DocumentoController extends Controller
             'data_documento' => $request->data_documento,
             'assunto' => $request->assunto,
             'mensagem' => $request->mensagem,
-            'categoria_id' => $request->categoria_id,
+            'categoria_id' => $categoria->id,
             'template_id' => $request->template_id,
             'anexo_id' => $request->anexo_id,
             'grupo_id' => $grupoId,
             'user_id' => Auth::id(),
         ]);
 
-        session()->flash('alert-success', 'Documento criado com sucesso! Código: ' . $codigo);
+        if ($request->hasFile('anexos')) {
+            foreach ($request->file('anexos') as $file) {
+                $path = $file->store('documentos/anexos', 'public');
+                $documento->anexos()->create([
+                    'nome_original' => $file->getClientOriginalName(),
+                    'tamanho' => $file->getSize(),
+                    'tipo_mime' => $file->getClientMimeType(),
+                    'tipo_anexo' => 'upload',
+                    'caminho' => $path,
+                    'user_id' => Auth::id(),
+                ]);
+            }
+        }
+
+
+        if($categoria->controlar_sequencial){
+            $ano = date('Y');
+            $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
+                ->where('grupo_id', $grupoId)
+                ->where('ano', $ano)
+                ->orderByDesc('id')
+                ->first();
+
+            $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
+
+            $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
+            $codigo = $this->gerarCodigo($categoria, $grupoId, $sequencial, $ano);
+
+            $updateData = [
+                'codigo' => $codigo,
+                'sequencial' => $sequencial,
+                'ano' => $ano,
+            ];
+        } else {
+            if($request->ano){
+                $updateData['ano'] = $request->ano;
+            }
+            if($request->sequencial){
+                $updateData['sequencial'] = $request->sequencial;
+            }
+            if($request->codigo){
+                $codigoExists = Documento::where('categoria_id', $categoria->id)
+                    ->where('grupo_id', $grupoId)->where('codigo', $request->codigo)->exists();
+                if(!$codigoExists){
+                    $updateData['codigo'] = $request->codigo;
+                    $codigo = $request->codigo;
+                }
+            } elseif($request->ano && $request->sequencial){
+                $codigo = $this->gerarCodigo($categoria, $grupoId, $request->sequencial, $request->ano);
+                $codigoExists = Documento::where('categoria_id', $categoria->id)
+                    ->where('grupo_id', $grupoId)->where('codigo', $codigo)->exists();
+                if(!$codigoExists){
+                    $updateData['codigo'] = $codigo;
+                } else {
+                    $codigo = null;
+                }
+            }
+        }
+
+        if (!empty($updateData)) {
+            $documento->update($updateData);
+        }
+
+        session()->flash('alert-success', 'Documento criado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
         return redirect()->route('documento.show', $documento);
     }
-
+ 
     /**
      * Exibe um documento específico
      *
@@ -198,6 +261,9 @@ class DocumentoController extends Controller
         }
 
         $request->validate([
+            'sequencial' => 'integer|nullable',
+            'ano' => 'integer|nullable',
+            'codigo' => 'string|max:255|nullable',
             'destinatario' => 'required|string|max:255',
             'remetente' => 'required|string|max:255',
             'data_documento' => 'required|date',
@@ -207,25 +273,94 @@ class DocumentoController extends Controller
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
-        $categoria = Categoria::findOrFail($request->categoria_id);
+        $categoria = Categoria::findOrFail($documento->categoria_id);
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para mover este documento para esta categoria.');
         }
 
-        $documento->update([
+        $updateData = [
             'destinatario' => $request->destinatario,
             'remetente' => $request->remetente,
             'data_documento' => $request->data_documento,
             'assunto' => $request->assunto,
             'mensagem' => $request->mensagem,
-            'categoria_id' => $request->categoria_id,
             'template_id' => $request->template_id,
             'grupo_id' => $categoria->grupo_id,
-        ]);
+        ];
 
-        session()->flash('alert-success', 'Documento atualizado com sucesso!');
-        return redirect()->route('documento.edit', $id);
+        $codigo = null;
+
+        if ($categoria->controlar_sequencial) {
+            $ano = $documento->ano ?? date('Y');
+            $sequencial = $documento->sequencial;
+
+            if (!$sequencial) {
+                $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
+                    ->where('grupo_id', $categoria->grupo_id)
+                    ->where('ano', $ano)
+                    ->orderByDesc('id')
+                    ->first();
+
+                $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
+
+                $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
+            }
+
+            $codigo = $this->gerarCodigo($categoria, $categoria->grupo_id, $sequencial, $ano);
+
+            $codigoExists = Documento::where('categoria_id', $categoria->id)
+                ->where('grupo_id', $categoria->grupo_id)
+                ->where('codigo', $codigo)
+                ->where('id', '!=', $documento->id)
+                ->exists();
+
+            if ($codigoExists) {
+                session()->flash('alert-danger', 'Já existe um documento com este código.');
+                return redirect()->back()->withInput();
+            }
+
+            $updateData['sequencial'] = $sequencial;
+            $updateData['ano'] = $ano;
+            $updateData['codigo'] = $codigo;
+        } else {
+            if ($request->ano) {
+                $updateData['ano'] = $request->ano;
+            }
+            if ($request->sequencial) {
+                $updateData['sequencial'] = $request->sequencial;
+            }
+            if ($request->codigo) {
+                $codigoExists = Documento::where('categoria_id', $categoria->id)
+                    ->where('grupo_id', $categoria->grupo_id)
+                    ->where('codigo', $request->codigo)
+                    ->where('id', '!=', $documento->id)
+                    ->exists();
+                if ($codigoExists) {
+                    session()->flash('alert-danger', 'Já existe um documento com este código.');
+                    return redirect()->back()->withInput();
+                }
+                $updateData['codigo'] = $request->codigo;
+                $codigo = $request->codigo;
+            } elseif ($request->ano && $request->sequencial) {
+                $codigo = $this->gerarCodigo($categoria, $categoria->grupo_id, $request->sequencial, $request->ano);
+                $codigoExists = Documento::where('categoria_id', $categoria->id)
+                    ->where('grupo_id', $categoria->grupo_id)
+                    ->where('codigo', $codigo)
+                    ->where('id', '!=', $documento->id)
+                    ->exists();
+                if ($codigoExists) {
+                    session()->flash('alert-danger', 'Já existe um documento com este código.');
+                    return redirect()->back()->withInput();
+                }
+                $updateData['codigo'] = $codigo;
+            }
+        }
+
+        $documento->update($updateData);
+
+        session()->flash('alert-success', 'Documento atualizado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
+        return redirect()->route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $id]);
     }
 
     /**
