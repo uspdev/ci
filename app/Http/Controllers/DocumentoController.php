@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use \Spatie\Activitylog\Models\Activity;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\Pdfgen;
 
 class DocumentoController extends Controller
 {
@@ -332,66 +333,136 @@ class DocumentoController extends Controller
         return view('documento.atividade', compact('activity', 'old', 'new'));
     }
 
+    public function print($template, $data)
+    {
+        if (!$template) {
+            abort(404, 'Template não encontrado.');
+        }
+
+        $fieldMap = [];
+        if ($template->variaveis) {
+            $fieldMap = is_array($template->variaveis)
+                ? $template->variaveis
+                : json_decode($template->variaveis, true);
+        }
+
+        $pdf = new Pdfgen();
+            $pdf->setTemplate(public_path('storage/' . $template->arquivo));
+
+
+        $pdf->setData($data);
+
+        $pdf->parse();
+
+        $pdf->pdfBuild('D', ['paper'=>'a4', 'orientation' => 'portrait'], $fieldMap);
+    }
+
     public function gerarPdf($id)
     {
-        $documento = \App\Models\Documento::with('template', 'categoria', 'categoria.grupo')->findOrFail($id);
+        $documento = Documento::with('template', 'categoria', 'categoria.grupo')->findOrFail($id);
 
-        if (!$documento->template) {
+        $template = $documento->template;
+
+        if (!$template) {
             return redirect()->back()->with('alert-danger', 'Documento não possui template associado.');
         }
 
-        $conteudo = $documento->template->conteudo_padrao;
+        $variaveis = [
+            'codigo'        => $documento->codigo,
+            'remetente'     => $documento->remetente,
+            'destinatario'  => $documento->destinatario,
+            'data'          => $documento->data_documento->format('d/m/Y'),
+            'assunto'       => $documento->assunto,
+            'mensagem'      => $documento->mensagem,
+        ];
 
+        $docName = $documento->categoria->grupo->name . '_' . $documento->categoria->prefixo . '_';
         $codigo = '';
         if (preg_match('/Nº (\d+)\//', $documento->codigo, $matches)) {
             $codigo = $matches[1];
         }
+        $docName .= $codigo . '.pdf';
 
-        $variaveis = [
-            'codigo'      => $documento->codigo,
-            'numero'      => $codigo,
-            'ano'         => $documento->data_documento->format('Y'),
-            'destinatario'=> $documento->destinatario,
-            'remetente'   => $documento->remetente,
-            'grupo'       => $documento->categoria->grupo->name ?? '',
-            'data'        => $documento->data_documento->format('d/m/Y'),
-            'assunto'     => $documento->assunto,
-            'mensagem'    => $documento->mensagem,
-        ];
+        $pdfContent = null;
+        $anexoHash = '';
+        $caminhoAnexo = '';
 
-        foreach ($variaveis as $chave => $valor) {
-            $conteudo = str_replace('{{ '.$chave.' }}', $valor, $conteudo);
-        }
+        if ($template->arquivo) {
+            $fieldMap = [];
+            if ($template->variaveis) {
+                $fieldMap = is_array($template->variaveis)
+                    ? $template->variaveis
+                    : json_decode($template->variaveis, true);
+            }
 
-        $htmlHash = md5($conteudo);
+            $pdfgen = new Pdfgen();
+            $pdfgen->setTemplate(public_path('storage/' . $template->arquivo));
+            $pdfgen->setData($variaveis);
+            $pdfgen->parse();
 
-        $anexoExistente = Anexo::where('documento_id', $documento->id)
-            ->where('tipo_anexo', 'gerado')
-            ->where('nome_arquivo', $htmlHash . '.pdf')
-            ->first();
-        $docName = $documento->categoria->grupo->name . '_' . $documento->categoria->abreviacao . '_' . $codigo . '.pdf';
+            $anexoHash = $pdfgen->getHash($fieldMap);
+            $caminhoAnexo = 'documentos/gerados/' . $anexoHash . '.pdf';
+            $fullPath = Storage::disk('public')->path($caminhoAnexo);
 
-        if (!$anexoExistente) {
-            $pdf = Pdf::loadHTML($conteudo);
-            $pdfContent = $pdf->output();
+            $anexoExistente = Anexo::where('documento_id', $documento->id)
+                ->where('tipo_anexo', 'gerado')
+                ->where('caminho', $caminhoAnexo)
+                ->first();
 
-            $nomeArquivo = $htmlHash . '.pdf';
-            $caminho = 'documentos/gerados/' . $nomeArquivo;
-
-            Storage::disk('public')->put($caminho, $pdfContent);
-
-            Anexo::create([
-                'documento_id'   => $documento->id,
-                'nome_original'  => $docName,
-                'nome_arquivo'   => $nomeArquivo,
-                'caminho'        => $caminho,
-                'tipo_mime'      => 'application/pdf',
-                'tamanho'        => strlen($pdfContent),
-                'tipo_anexo'     => 'gerado',
-                'user_id'        => auth()->id(),
-            ]);
+            if ($anexoExistente && Storage::disk('public')->exists($caminhoAnexo)) {
+                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+            } else {
+                $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $fieldMap, $fullPath);
+                
+                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+                Anexo::updateOrCreate(
+                    [
+                        'documento_id' => $documento->id,
+                        'tipo_anexo' => 'gerado',
+                        'nome_original' => $docName,
+                        'caminho' => $caminhoAnexo,
+                        'tipo_mime' => 'application/pdf',
+                        'tamanho' => strlen($pdfContent),
+                        'user_id' => auth()->id(),
+                    ]
+                );
+            }
         } else {
-            $pdfContent = Storage::disk('public')->get($anexoExistente->caminho);
+            $conteudo = $template->conteudo_padrao;
+            
+            foreach ($variaveis as $chave => $valor) {
+                $conteudo = str_replace('{{ '.$chave.' }}', $valor, $conteudo);
+            }
+            
+            $anexoHash = md5($conteudo);
+            $caminhoAnexo = 'documentos/gerados/' . $anexoHash . '.pdf';
+            $fullPath = Storage::disk('public')->path($caminhoAnexo);
+
+            $anexoExistente = Anexo::where('documento_id', $documento->id)
+                ->where('tipo_anexo', 'gerado')
+                ->where('caminho', $caminhoAnexo)
+                ->first();
+
+            if ($anexoExistente && Storage::disk('public')->exists($caminhoAnexo)) {
+                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+            } else {
+                $pdf = Pdf::loadHTML($conteudo);
+                $pdf->save($fullPath); 
+                
+                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+
+                Anexo::updateOrCreate(
+                    [
+                        'documento_id' => $documento->id,
+                        'tipo_anexo' => 'gerado',
+                        'nome_original' => $docName,
+                        'caminho' => $caminhoAnexo,
+                        'tipo_mime' => 'application/pdf',
+                        'tamanho' => strlen($pdfContent),
+                        'user_id' => auth()->id(),
+                    ]
+                );
+            }
         }
 
         return response($pdfContent)
