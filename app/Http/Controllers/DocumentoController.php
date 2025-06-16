@@ -99,25 +99,27 @@ class DocumentoController extends Controller
         }
 
         $request->validate([
+            'sequencial' => 'integer|nullable',
+            'ano' => 'integer|nullable',
+            'codigo' => 'string|max:255|nullable',
             'destinatario' => 'required|string|max:255',
             'remetente' => 'required|string|max:255',
             'data_documento' => 'required|date',
             'assunto' => 'required|string',
             'mensagem' => 'required|string',
-            'categoria_id' => 'required|exists:categorias,id',
             'template_id' => 'nullable|exists:templates,id',
             'anexo_id' => 'nullable|exists:documentos,id',
         ]);
 
-        $categoria = Categoria::findOrFail($request->categoria_id);
+        $categoria = Categoria::findOrFail($categoria);
         if ($categoria->grupo_id != $grupoId) {
             abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
-        $categoria = Categoria::find($request->categoria_id);
-        $codigo = $this->gerarCodigo($categoria, $grupoId);
+
+        $codigo = null;
+        $updateData = [];
 
         $documento = Documento::create([
-            'codigo' => $codigo,
             'destinatario' => $request->destinatario,
             'remetente' => $request->remetente,
             'data_documento' => $request->data_documento,
@@ -269,7 +271,6 @@ class DocumentoController extends Controller
             'data_documento' => 'required|date',
             'assunto' => 'required|string',
             'mensagem' => 'required|string',
-            'categoria_id' => 'required|exists:categorias,id',
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
@@ -424,6 +425,12 @@ class DocumentoController extends Controller
     public function detalharAtividade($id)
     {
         $activity = Activity::findOrFail($id);
+
+        $documento = Documento::findOrFail($activity->subject_id);
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
+            abort(403, 'Você não tem permissão para visualizar este documento.');
+        }
+
         $old = $activity->properties['old'] ?? [];
         $new = $activity->properties['attributes'] ?? [];
         return view('documento.atividade', compact('activity', 'old', 'new'));

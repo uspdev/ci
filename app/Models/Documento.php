@@ -16,6 +16,8 @@ class Documento extends Model
 
     protected $fillable = [
         'codigo',
+        'sequencial',
+        'ano',
         'destinatario',
         'remetente',
         'data_documento',

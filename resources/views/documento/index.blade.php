@@ -4,9 +4,20 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Documentos</h4>
-      <a href="{{ route('documento.create') }}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Novo Documento
-      </a>
+      <div class="dropdown">
+        <button class="btn btn-success dropdown-toggle" type="button" id="novoDocumentoDropdown" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          Novo Documento
+        </button>
+        <div class="dropdown-menu" aria-labelledby="novoDocumentoDropdown">
+          @foreach ($categorias as $categoria)
+            <a class="dropdown-item" href="{{ route('documento.create', ['categoria' => $categoria->id]) }}">
+              {{ $categoria->nome }}
+            </a>
+          @endforeach
+        </div>
+      </div>
+
     </div>
     <div class="card-body">
       <table id="documentos-table" class="table table-striped table-bordered">
@@ -42,13 +53,14 @@
                     <i class="fas fa-eye"></i>
                   </a>
                   @unless ($documento->finalizado)
-                    <a href="{{ route('documento.edit', $documento) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
+                    <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
                       <i class="fas fa-edit"></i>
                     </a>
                     <form action="{{ route('documento.destroy', $documento) }}" method="POST" class="d-inline">
                       @csrf
                       @method('DELETE')
-                      <button type="submit" class="btn btn-outline-danger btn-sm d-flex" onclick="return confirm('Tem certeza?')">
+                      <button type="submit" class="btn btn-outline-danger btn-sm d-flex"
+                        onclick="return confirm('Tem certeza?')">
                         <i class="fas fa-trash"></i>
                       </button>
                     </form>

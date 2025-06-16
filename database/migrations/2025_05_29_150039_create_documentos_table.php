@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('documentos', function (Blueprint $table) {
             $table->id();
-            $table->string('codigo', 50);
+            $table->string('codigo', 50)->nullable();
+            $table->integer('sequencial')->nullable();
+            $table->integer('ano')->nullable();
             $table->string('destinatario');
             $table->string('remetente');
             $table->date('data_documento');

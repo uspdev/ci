@@ -4,35 +4,44 @@
   <div class="card">
     <div class="card-header">
       <h4 class="mb-0">{{ isset($documento) ? 'Editar documento: ' . $documento->codigo : 'Novo documento' }}</h4>
-      @if (!isset($documento))
+      @if (!isset($documento) && \App\Models\Categoria::findOrFail($categoria)->controlar_sequencial == 1)
         <div class="mt-1">O código será gerado automaticamente</div>
       @endif
     </div>
     <div class="card-body">
-    
-      <form action="{{ isset($documento) ? route('documento.update', $documento) : route('documento.store') }}"
-        method="POST">
+
+      <form
+        action="{{ isset($documento) ? route('documento.update', $documento) : route('documento.store', ['categoria' => $categoria]) }}"
+        method="POST" enctype="multipart/form-data">
         @csrf
         @if (isset($documento))
           @method('PUT')
         @endif
 
-        <div class="row">
-          <div class="col-md-6">
-            <div class="mb-3">
-              <label for="categoria_id" class="form-label">Categoria</label>
-              <select class="form-select" id="categoria_id" name="categoria_id" required>
-                <option value="">Selecione a categoria</option>
-                @foreach ($categorias as $categoria)
-                  <option value="{{ $categoria->id }}"
-                    {{ old('categoria_id', $documento->categoria_id ?? '') == $categoria->id ? 'selected' : '' }}>
-                    {{ $categoria->nome }}
-                  </option>
-                @endforeach
-              </select>
+        @if (\App\Models\Categoria::findOrFail($categoria)->controlar_sequencial != 1)
+          <div class="mb-3">
+            <label for="codigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="codigo" name="codigo"
+              value="{{ old('codigo', $documento->codigo ?? '') }}">
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="ano" class="form-label">Ano</label>
+                <input type="number" class="form-control" id="ano" name="ano"
+                  value="{{ old('ano', $documento->ano ?? '') }}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="sequencial" class="form-label">Sequencial</label>
+                <input type="number" class="form-control" id="sequencial" name="sequencial"
+                  value="{{ old('sequencial', $documento->sequencial ?? '') }}">
+              </div>
             </div>
           </div>
-        </div>
+        @endif
 
         <div class="row">
           <div class="col-md-6">
@@ -83,25 +92,14 @@
 
         <div class="mb-3">
           <label for="mensagem" class="form-label">Mensagem</label>
-          <textarea class="form-control" id="mensagem" name="mensagem" rows="6" required>{{ old('mensagem', $documento->mensagem ?? '') }}</textarea>
+          <textarea class="form-control" id="mensagem" name="mensagem" rows="6">{{ old('mensagem', $documento->mensagem ?? '') }}</textarea>
         </div>
 
-        @if (isset($documento) && $documento->anexos->count() > 0)
-          <div class="mb-3">
-            <h5>Anexos Existentes</h5>
-            <div class="list-group">
-              @foreach ($documento->anexos as $anexo)
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{{ $anexo->nome_original }}</strong>
-                    <small class="text-muted">({{ number_format($anexo->tamanho / 1024, 2) }} KB)</small>
-                  </div>
-                  <span class="badge bg-secondary">{{ $anexo->tipo_anexo }}</span>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        @endif
+        <div class="mb-3">
+          <label for="anexos" class="form-label">Adicionar Anexos</label>
+          <input type="file" class="form-control" id="anexos" name="anexos[]" multiple>
+          <small class="form-text text-muted">Você pode selecionar mais de um arquivo.</small>
+        </div>
 
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-success">
@@ -147,32 +145,31 @@
     </div>
   </div>
 @endsection
-@section('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-<script>
-  let editorInstance;
-  
-  ClassicEditor
-    .create(document.querySelector('#mensagem'), {
-      toolbar: {
-        items: [
-          'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
-          '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'
-        ]
-      },
-      language: 'pt-br',
-      table: {
-        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+@section('javascripts_bottom')
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var mensagemField = document.querySelector('#mensagem');
+      if (mensagemField) {
+        ClassicEditor
+          .create(mensagemField, {
+            toolbar: {
+              items: [
+                'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+                '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'
+              ]
+            },
+            language: 'pt-br',
+            table: {
+              contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            }
+          })
+          .catch(error => {
+            console.error('CKEditor error: ', error);
+          });
+      } else {
+        console.error('Campo #mensagem não encontrado no DOM.');
       }
-    })
-    .then(editor => {
-      editorInstance = editor;
-            document.querySelector('form').addEventListener('submit', function(e) {
-        document.querySelector('#mensagem').value = editor.getData();
-      });
-    })
-    .catch(error => {
-      console.error('CKEditor error: ', error);
     });
-</script>
+  </script>
 @endsection

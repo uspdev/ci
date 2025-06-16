@@ -7,8 +7,8 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Categoria: {{ $categoria->nome }}</h4>
       <div>
-        <a href="{{ route('categoria.edit', $categoria) }}" class="btn btn-primary">
-          <i class="fas fa-edit"></i> Editar
+        <a href="{{ route('categoria.edit', $categoria) }}" class="btn btn-outline-primary">
+          <i class="fas fa-edit"></i> 
         </a>
         <a href="{{ route('categoria.index') }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
@@ -18,7 +18,7 @@
     <div class="card-body">
       <div class="row mb-4">
         <div class="col-md-6">
-          <strong>Nome:</strong> {{ $categoria->nome }} - {{ $categoria->abreviacao }}
+          <strong>Nome:</strong> {{ $categoria->nome }} - {{ $categoria->prefixo }}
         </div>
         <div class="col-md-6">
           <strong>Grupo:</strong> {{ $categoria->grupo->name }}
@@ -44,7 +44,6 @@
                     <small class="text-muted">{{ Str::limit($template->descricao, 100) }}</small>
                   @endif
                 </div>
-                <span class="badge bg-info">Template</span>
               </div>
             @endforeach
           </div>
@@ -111,7 +110,7 @@
         @else
           <div class="alert alert-info">
             Nenhum documento criado nesta categoria ainda.
-            <a href="{{ route('documento.create') }}">
+            <a href="{{ route('documento.create', $categoria->id) }}">
               Criar primeiro documento
             </a>
           </div>
