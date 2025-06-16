@@ -450,30 +450,6 @@ class DocumentoController extends Controller
         return view('documento.atividade', compact('activity', 'old', 'new'));
     }
 
-    public function print($template, $data)
-    {
-        if (!$template) {
-            abort(404, 'Template não encontrado.');
-        }
-
-        $fieldMap = [];
-        if ($template->variaveis) {
-            $fieldMap = is_array($template->variaveis)
-                ? $template->variaveis
-                : json_decode($template->variaveis, true);
-        }
-
-        $pdf = new Pdfgen();
-            $pdf->setTemplate(public_path('storage/' . $template->arquivo));
-
-
-        $pdf->setData($data);
-
-        $pdf->parse();
-
-        $pdf->pdfBuild('D', ['paper'=>'a4', 'orientation' => 'portrait'], $fieldMap);
-    }
-
     public function gerarPdf($id)
     {
         $documento = Documento::with('template', 'categoria', 'categoria.grupo')->findOrFail($id);
