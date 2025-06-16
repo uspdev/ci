@@ -15,6 +15,7 @@ class Template extends Model
         'nome',
         'descricao',
         'conteudo_padrao',
+        'arquivo',
         'variaveis',
         'user_id',
     ];

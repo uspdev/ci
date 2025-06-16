@@ -40,11 +40,17 @@ class TemplateController extends Controller
         $request->validate([
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
-            'conteudo_padrao' => 'required|string',
+            'conteudo_padrao' => 'required_without:file|string',
             'variaveis' => 'nullable|json',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
+            'arquivo' => 'nullable|file|mimes:pdf|max:10240',
         ]);
+
+        $filePath = null;
+        if ($request->hasFile('arquivo')) {
+            $filePath = $request->file('arquivo')->store('templates', 'public');
+        }
 
         $template = Template::create([
             'nome' => $request->nome,
@@ -52,6 +58,7 @@ class TemplateController extends Controller
             'conteudo_padrao' => $request->conteudo_padrao,
             'variaveis' => $request->variaveis ? json_decode($request->variaveis, true) : null,
             'user_id' => Auth::id(),
+            'arquivo' => $filePath,
         ]);
 
         if ($request->has('categorias')) {
@@ -101,13 +108,19 @@ class TemplateController extends Controller
             'variaveis' => 'nullable|json',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
+            'arquivo' => 'nullable|file|mimes:pdf|max:10240',
         ]);
+
+        if ($request->hasFile('arquivo')) {
+            $filePath = $request->file('arquivo')->store('templates', 'public');
+        }
 
         $template->update([
             'nome' => $request->nome,
             'descricao' => $request->descricao,
             'conteudo_padrao' => $request->conteudo_padrao,
             'variaveis' => $request->variaveis ? json_decode($request->variaveis, true) : null,
+            'arquivo' => $filePath ?? $template->arquivo,
         ]);
 
         if ($request->has('categorias')) {
@@ -138,17 +151,20 @@ class TemplateController extends Controller
     public function gerarPdf($id)
     {
         $template = Template::findOrFail($id);
-
+        if($template->arquivo){
+            return \Illuminate\Support\Facades\Storage::disk('public')->download($template->arquivo);
+        } 
+        
         $conteudo = $template->conteudo_padrao;
         if (is_array($template->variaveis)) {
             foreach ($template->variaveis as $chave => $tipo) {
                 $valor = strtoupper($chave);
-                $conteudo = str_replace('{{' . $chave . '}}', $valor, $conteudo);
+                $conteudo = str_replace('{{ ' . $chave . ' }}', $valor, $conteudo);
             }
         }
 
         $pdf = pdf::loadHTML($conteudo);
-
+        
         return $pdf->download('template_' . $template->id . '.pdf');
     }
 }

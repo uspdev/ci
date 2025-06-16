@@ -7,7 +7,7 @@
     </div>
     <div class="card-body">
       <form action="{{ isset($template) ? route('template.update', $template) : route('template.store') }}"
-        method="POST">
+        method="POST" enctype="multipart/form-data">
         @csrf
         @if (isset($template))
           @method('PUT')
@@ -48,6 +48,12 @@
           <small class="text-muted">Selecione uma ou mais categorias.</small>
         </div>
 
+        <div class="mb-3">
+          <label for="arquivo" class="form-label">Arquivo de template</label>
+          <input type="file" class="form-control" id="arquivo" name="arquivo" accept="application/pdf"
+            value="{{ old('arquivo', $template->arquivo ?? '') }}">
+        </div>
+        
         <button type="submit" class="btn btn-success">{{ isset($template) ? 'Atualizar' : 'Salvar' }}</button>
         <a href="{{ route('template.index') }}" class="btn btn-secondary">Voltar</a>
       </form>

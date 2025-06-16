@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nome');
             $table->text('descricao')->nullable();
             $table->text('conteudo_padrao');
+            $table->text('arquivo')->nullable();
             $table->json('variaveis')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
