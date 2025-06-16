@@ -20,30 +20,15 @@ class DocumentoController extends Controller
      * Gera código automático para documento
      * Formato: CATEGORIA Nº XXX/AAAA/GRUPO-e
      */
-    private function gerarCodigo(Categoria $categoria, int $grupoId): string
+    private function gerarCodigo(Categoria $categoria, int $grupoId, int $sequencial, int $ano): string
     {
-        $ano = date('Y');
         $grupo = Grupo::findOrFail($grupoId);
-        
-        $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
-            ->where('grupo_id', $grupoId)
-            ->whereYear('created_at', $ano)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $proximoNumero = 1;
-        if ($ultimoDocumento) {
-            preg_match('/Nº (\d+)\//', $ultimoDocumento->codigo, $matches);
-            $proximoNumero = isset($matches[1]) ? intval($matches[1]) + 1 : 1;
-        }
-
-        $categoriaAbrev = iconv('UTF-8', 'ASCII//TRANSLIT', $categoria->abreviacao);
-        $numero = str_pad($proximoNumero, 3, '0', STR_PAD_LEFT);
+        $categoriaPrefixo = iconv('UTF-8', 'ASCII//TRANSLIT', $categoria->prefixo);
+        $numero = str_pad($sequencial, 3, '0', STR_PAD_LEFT);
         $grupoNome = strtoupper($grupo->name);
-        
-        return "{$categoriaAbrev} Nº {$numero}/{$ano}/{$grupoNome}-e";
-    }
 
+        return "{$categoriaPrefixo} Nº {$numero}/{$ano}/{$grupoNome}-e";
+    }
 
     /**
      * Exibe a lista de documentos do grupo ativo
