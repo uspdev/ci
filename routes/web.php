@@ -50,16 +50,17 @@ Route::prefix('categorias')->name('categoria.')->group(function () {
 
 Route::prefix('documentos')->name('documento.')->group(function () {
     Route::get('/', [DocumentoController::class, 'index'])->name('index');
-    Route::get('/create', [DocumentoController::class, 'create'])->name('create');
-    Route::post('/', [DocumentoController::class, 'store'])->name('store');
+    Route::get('{categoria}/create', [DocumentoController::class, 'create'])->name('create');
+    Route::post('/{categoria}', [DocumentoController::class, 'store'])->name('store');
     Route::get('/{id}', [DocumentoController::class, 'show'])->name('show');
-    Route::get('/{id}/edit', [DocumentoController::class, 'edit'])->name('edit');
+    Route::get('{categoria}/{id}/edit', [DocumentoController::class, 'edit'])->name('edit');
     Route::put('/{id}', [DocumentoController::class, 'update'])->name('update');
     Route::patch('/{id}/finalizar', [DocumentoController::class, 'finalizar'])->name('finalizar');
     Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('destroy');
     Route::post('/{id}/anexo', [DocumentoController::class, 'uploadAnexo'])->name('anexo.upload');
     Route::get('/atividades/{id}', [DocumentoController::class, 'detalharAtividade'])->name('atividade');
     Route::get('{id}/pdf', [DocumentoController::class, 'gerarPdf'])->name('pdf');
+    Route::post('/{id}/copy', [DocumentoController::class, 'copy'])->name('copy');
 });
 
 Route::prefix('anexos')->name('anexo.')->group(function () {

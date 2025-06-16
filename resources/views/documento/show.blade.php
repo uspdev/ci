@@ -7,9 +7,21 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Documento: {{ $documento->codigo }}</h4>
       <div>
+        <form action="{{ route('documento.copy', $documento->id) }}" method="POST" style="display:inline;">
+          @csrf
+          <button type="submit" class="btn btn-outline-success ml-2">
+            <i class="fas fa-copy"></i>
+          </button>
+        </form>
+        @if (isset($documento->template))
+          <a href="{{ route('documento.pdf', $documento->id) }}" class="btn btn-outline-secondary" target="_blank">
+            <i class="fas fa-file-pdf"></i> 
+          </a>
+        @endif
         @unless ($documento->finalizado)
-          <a href="{{ route('documento.edit', $documento) }}" class="btn btn-primary">
-            <i class="fas fa-edit"></i> Editar
+          <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}"
+            class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i> 
           </a>
           <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
             @csrf
@@ -22,11 +34,6 @@
         @else
           <span class="badge bg-success fs-6 text-white">Documento Finalizado</span>
         @endunless
-        @if (isset($documento->template))
-            <a href="{{ route('documento.pdf', $documento->id) }}" class="btn btn-outline-secondary" target="_blank">
-              <i class="fas fa-file-pdf"></i> Gerar PDF
-            </a>
-        @endif
         <a href="{{ route('documento.index') }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
         </a>
@@ -60,7 +67,9 @@
         <div class="col-md-6 mt-2">
           <strong>Status:</strong>
           @if ($documento->finalizado)
-            Finalizado por {{ \Uspdev\Replicado\Pessoa::nomeCompleto(\App\Models\User::find($documento->finalizer_user_id)->codpes) }} em {{ $documento->data_finalizacao->format('d/m/Y H:i') }}
+            Finalizado por
+            {{ \Uspdev\Replicado\Pessoa::nomeCompleto(\App\Models\User::find($documento->finalizer_user_id)->codpes) }}
+            em {{ $documento->data_finalizacao->format('d/m/Y H:i') }}
           @else
             <span class="badge bg-warning">Em andamento</span>
           @endif
@@ -98,7 +107,7 @@
                 </div>
                 <div>
                   <span class="badge bg-secondary me-2 text-white">{{ ucfirst($anexo->tipo_anexo) }}</span>
-                  <a href="{{ Storage::url($anexo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <a href=".{{ Storage::url($anexo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-download"></i> Download
                   </a>
                 </div>

@@ -565,4 +565,46 @@ class DocumentoController extends Controller
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="'.$docName.'"');
     }
+
+    public function copy($id)
+    {
+        $documento = Documento::with('anexos')->findOrFail($id);
+        $categoria = $documento->categoria;
+        $grupoId = $documento->grupo_id;
+
+        $novoDocumento = $documento->replicate(['sequencial', 'ano', 'codigo', 'created_at', 'updated_at']);
+        $novoDocumento->finalizado = false;
+
+        if ($categoria->controlar_sequencial) {
+            $ano = date('Y');
+            $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
+                ->where('grupo_id', $grupoId)
+                ->where('ano', $ano)
+                ->orderByDesc('id')
+                ->first();
+
+            $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
+
+            $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
+            $novoDocumento->ano = $ano;
+            $novoDocumento->sequencial = $sequencial;
+            $novoDocumento->codigo = $this->gerarCodigo($categoria, $grupoId, $sequencial, $ano);
+        } else {
+            $novoDocumento->ano = null;
+            $novoDocumento->sequencial = null;
+            $novoDocumento->codigo = null;
+        }
+
+        $novoDocumento->save();
+
+        foreach ($documento->anexos as $anexo) {
+            $novoAnexo = $anexo->replicate(['id', 'created_at', 'updated_at']);
+            $novoAnexo->documento_id = $novoDocumento->id;
+            $novoAnexo->save();
+        }
+
+        session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));
+        return redirect()->route('documento.edit', ['categoria' => $novoDocumento->categoria_id, 'id' => $novoDocumento->id]);
+    }
+
 }
