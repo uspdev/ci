@@ -33,7 +33,7 @@ class GrupoMenuMiddleware
                 foreach ($grupos as $grupo) {
                     $sub[] = [
                         'text' => $grupo->name,
-                        'url' => 'grupo/select/' . $grupo->id,
+                        'url' => 'grupos/select/' . $grupo->id,
                     ];
                 }
             }
@@ -41,7 +41,7 @@ class GrupoMenuMiddleware
             $sub[] = [
                 'text' => '<i class="fas fa-cog"></i> Configurações',
                 'title' => 'Configurações',
-                'url' => 'grupo',
+                'url' => 'grupos',
                 'align' => 'right',
             ];
             $grupoAtivo = Grupo::find(session('grupo_id'));

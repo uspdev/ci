@@ -27,18 +27,20 @@ Route::fallback(function(){
     return view('errors.404');
  });
 
-Route::get('grupo', [GrupoController::class, 'index'])->name('grupo.index');
-Route::get('grupo/create', [GrupoController::class, 'create'])->name('grupo.create');
-Route::post('grupo/create', [GrupoController::class, 'store'])->name('grupo.store');
-Route::get('grupo/edit/{grupo_id}', [GrupoController::class, 'edit'])->name('grupo.edit');
-Route::put('grupo/edit/{grupo_id}', [GrupoController::class, 'update'])->name('grupo.update');
-Route::get('grupo/{grupo_id}', [GrupoController::class, 'show'])->name('grupo.show');
-Route::delete('grupo/{grupo_id}', [GrupoController::class, 'destroy'])->name('grupo.destroy');
-Route::get('grupo/select/{id}', [GrupoController::class, 'selectGrupo'])->name('grupo.select');
-Route::put('/grupo/{id}/editarResponsavel', [GrupoController::class, 'editarResponsavel'])->name('grupo.editarResponsavel');
-Route::put('/grupo/editarGerentes', [GrupoController::class, 'editarGerentes'])->name('grupo.editarGerentes');
+ Route::prefix('grupos')->name('grupo.')->middleware('auth')->group(function () {
+    Route::get('/', [GrupoController::class, 'index'])->name('index');
+    Route::get('/create', [GrupoController::class, 'create'])->name('create');
+    Route::post('/create', [GrupoController::class, 'store'])->name('store');
+    Route::get('/edit/{grupo_id}', [GrupoController::class, 'edit'])->name('edit');
+    Route::put('/edit/{grupo_id}', [GrupoController::class, 'update'])->name('update');
+    Route::get('/{grupo_id}', [GrupoController::class, 'show'])->name('show');
+    Route::delete('/{grupo_id}', [GrupoController::class, 'destroy'])->name('destroy');
+    Route::get('/select/{id}', [GrupoController::class, 'selectGrupo'])->name('select');
+    Route::put('/{id}/editarResponsavel', [GrupoController::class, 'editarResponsavel'])->name('editarResponsavel');
+    Route::put('/editarGerentes', [GrupoController::class, 'editarGerentes'])->name('editarGerentes');
+});
 
-Route::prefix('categorias')->name('categoria.')->group(function () {
+Route::prefix('categorias')->name('categoria.')->middleware('auth')->group(function () {
     Route::get('/', [CategoriaController::class, 'index'])->name('index');
     Route::get('/create', [CategoriaController::class, 'create'])->name('create');
     Route::post('/', [CategoriaController::class, 'store'])->name('store');
@@ -48,7 +50,7 @@ Route::prefix('categorias')->name('categoria.')->group(function () {
     Route::delete('/{id}', [CategoriaController::class, 'destroy'])->name('destroy');
 });
 
-Route::prefix('documentos')->name('documento.')->group(function () {
+Route::prefix('documentos')->name('documento.')->middleware('auth')->group(function () {
     Route::get('/', [DocumentoController::class, 'index'])->name('index');
     Route::get('{categoria}/create', [DocumentoController::class, 'create'])->name('create');
     Route::post('/{categoria}', [DocumentoController::class, 'store'])->name('store');
@@ -63,12 +65,12 @@ Route::prefix('documentos')->name('documento.')->group(function () {
     Route::post('/{id}/copy', [DocumentoController::class, 'copy'])->name('copy');
 });
 
-Route::prefix('anexos')->name('anexo.')->group(function () {
+Route::prefix('anexos')->name('anexo.')->middleware('auth')->group(function () {
     Route::post('/{id}', [AnexoController::class, 'upload'])->name('upload');
     Route::delete('/{id}', [AnexoController::class, 'destroy'])->name('destroy');
 });
 
-Route::prefix('templates')->name('template.')->group(function () {
+Route::prefix('templates')->name('template.')->middleware('auth')->group(function () {
     Route::get('/', [TemplateController::class, 'index'])->name('index');
     Route::get('/create', [TemplateController::class, 'create'])->name('create');
     Route::post('/', [TemplateController::class, 'store'])->name('store');
