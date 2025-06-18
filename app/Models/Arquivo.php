@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Anexo extends Model
+class Arquivo extends Model
 {
     use HasFactory;
 
@@ -16,7 +16,7 @@ class Anexo extends Model
         'caminho',
         'tipo_mime',
         'tamanho',
-        'tipo_anexo',
+        'tipo_arquivo',
         'user_id',
     ];
 

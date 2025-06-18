@@ -6,7 +6,7 @@ use App\Models\Documento;
 use App\Models\Categoria;
 use App\Models\Grupo;
 use App\Models\Template;
-use App\Models\Anexo;
+use App\Models\Arquivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -108,7 +108,7 @@ class DocumentoController extends Controller
             'assunto' => 'required|string',
             'mensagem' => 'required|string',
             'template_id' => 'nullable|exists:templates,id',
-            'anexo_id' => 'nullable|exists:documentos,id',
+            'arquivo_id' => 'nullable|exists:documentos,id',
         ]);
 
         $categoria = Categoria::findOrFail($categoria);
@@ -127,19 +127,19 @@ class DocumentoController extends Controller
             'mensagem' => $request->mensagem,
             'categoria_id' => $categoria->id,
             'template_id' => $request->template_id,
-            'anexo_id' => $request->anexo_id,
+            'arquivo_id' => $request->arquivo_id,
             'grupo_id' => $grupoId,
             'user_id' => Auth::id(),
         ]);
 
-        if ($request->hasFile('anexos')) {
-            foreach ($request->file('anexos') as $file) {
-                $path = $file->store('documentos/anexos', 'public');
-                $documento->anexos()->create([
+        if ($request->hasFile('arquivos')) {
+            foreach ($request->file('arquivos') as $file) {
+                $path = $file->store('documentos/arquivos', 'public');
+                $documento->arquivos()->create([
                     'nome_original' => $file->getClientOriginalName(),
                     'tamanho' => $file->getSize(),
                     'tipo_mime' => $file->getClientMimeType(),
-                    'tipo_anexo' => 'upload',
+                    'tipo_arquivo' => 'upload',
                     'caminho' => $path,
                     'user_id' => Auth::id(),
                 ]);
@@ -207,7 +207,7 @@ class DocumentoController extends Controller
      */
     public function show($id)
     {
-        $documento = Documento::with(['categoria.grupo', 'template', 'anexos'])->findOrFail($id);
+        $documento = Documento::with(['categoria.grupo', 'template', 'arquivos'])->findOrFail($id);
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar este documento.');
@@ -226,7 +226,7 @@ class DocumentoController extends Controller
      */
     public function edit($categoria, $id)
     {
-        $documento = Documento::with(['categoria.grupo', 'template', 'anexos'])->findOrFail($id);
+        $documento = Documento::with(['categoria.grupo', 'template', 'arquivos'])->findOrFail($id);
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar este documento.');
@@ -274,14 +274,14 @@ class DocumentoController extends Controller
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
-        if ($request->hasFile('anexos')) {
-            foreach ($request->file('anexos') as $file) {
-                $path = $file->store('documentos/anexos', 'public');
-                $documento->anexos()->create([
+        if ($request->hasFile('arquivos')) {
+            foreach ($request->file('arquivos') as $file) {
+                $path = $file->store('documentos/arquivos', 'public');
+                $documento->arquivos()->create([
                     'nome_original' => $file->getClientOriginalName(),
                     'tamanho' => $file->getSize(),
                     'tipo_mime' => $file->getClientMimeType(),
-                    'tipo_anexo' => 'upload',
+                    'tipo_arquivo' => 'upload',
                     'caminho' => $path,
                     'user_id' => Auth::id(),
                 ]);
@@ -426,8 +426,8 @@ class DocumentoController extends Controller
             return redirect()->route('documento.show', $id);
         }
 
-        foreach ($documento->anexos as $anexo) {
-            Storage::delete($anexo->caminho);
+        foreach ($documento->arquivos as $arquivo) {
+            Storage::delete($arquivo->caminho);
         }
 
         $documento->delete();
@@ -477,8 +477,8 @@ class DocumentoController extends Controller
         $docName .= $codigo . '.pdf';
 
         $pdfContent = null;
-        $anexoHash = '';
-        $caminhoAnexo = '';
+        $arquivoHash = '';
+        $caminhoArquivo = '';
 
         if ($template->arquivo) {
             $fieldMap = [];
@@ -493,27 +493,27 @@ class DocumentoController extends Controller
             $pdfgen->setData($variaveis);
             $pdfgen->parse();
 
-            $anexoHash = $pdfgen->getHash($fieldMap);
-            $caminhoAnexo = 'documentos/gerados/' . $anexoHash . '.pdf';
-            $fullPath = Storage::disk('public')->path($caminhoAnexo);
+            $arquivoHash = $pdfgen->getHash($fieldMap);
+            $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.pdf';
+            $fullPath = Storage::disk('public')->path($caminhoArquivo);
 
-            $anexoExistente = Anexo::where('documento_id', $documento->id)
-                ->where('tipo_anexo', 'gerado')
-                ->where('caminho', $caminhoAnexo)
+            $arquivoExistente = Arquivo::where('documento_id', $documento->id)
+                ->where('tipo_arquivo', 'gerado')
+                ->where('caminho', $caminhoArquivo)
                 ->first();
 
-            if ($anexoExistente && Storage::disk('public')->exists($caminhoAnexo)) {
-                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+            if ($arquivoExistente && Storage::disk('public')->exists($caminhoArquivo)) {
+                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
             } else {
                 $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $fieldMap, $fullPath);
                 
-                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
-                Anexo::updateOrCreate(
+                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
+                Arquivo::updateOrCreate(
                     [
                         'documento_id' => $documento->id,
-                        'tipo_anexo' => 'gerado',
+                        'tipo_arquivo' => 'gerado',
                         'nome_original' => $docName,
-                        'caminho' => $caminhoAnexo,
+                        'caminho' => $caminhoArquivo,
                         'tipo_mime' => 'application/pdf',
                         'tamanho' => strlen($pdfContent),
                         'user_id' => auth()->id(),
@@ -527,29 +527,29 @@ class DocumentoController extends Controller
                 $conteudo = str_replace('{{ '.$chave.' }}', $valor, $conteudo);
             }
             
-            $anexoHash = md5($conteudo);
-            $caminhoAnexo = 'documentos/gerados/' . $anexoHash . '.pdf';
-            $fullPath = Storage::disk('public')->path($caminhoAnexo);
+            $arquivoHash = md5($conteudo);
+            $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.pdf';
+            $fullPath = Storage::disk('public')->path($caminhoArquivo);
 
-            $anexoExistente = Anexo::where('documento_id', $documento->id)
-                ->where('tipo_anexo', 'gerado')
-                ->where('caminho', $caminhoAnexo)
+            $arquivoExistente = Arquivo::where('documento_id', $documento->id)
+                ->where('tipo_arquivo', 'gerado')
+                ->where('caminho', $caminhoArquivo)
                 ->first();
 
-            if ($anexoExistente && Storage::disk('public')->exists($caminhoAnexo)) {
-                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+            if ($arquivoExistente && Storage::disk('public')->exists($caminhoArquivo)) {
+                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
             } else {
                 $pdf = Pdf::loadHTML($conteudo);
                 $pdf->save($fullPath); 
                 
-                $pdfContent = Storage::disk('public')->get($caminhoAnexo);
+                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
 
-                Anexo::updateOrCreate(
+                Arquivo::updateOrCreate(
                     [
                         'documento_id' => $documento->id,
-                        'tipo_anexo' => 'gerado',
+                        'tipo_arquivo' => 'gerado',
                         'nome_original' => $docName,
-                        'caminho' => $caminhoAnexo,
+                        'caminho' => $caminhoArquivo,
                         'tipo_mime' => 'application/pdf',
                         'tamanho' => strlen($pdfContent),
                         'user_id' => auth()->id(),
@@ -565,7 +565,7 @@ class DocumentoController extends Controller
 
     public function copy($id)
     {
-        $documento = Documento::with('anexos')->findOrFail($id);
+        $documento = Documento::with('arquivos')->findOrFail($id);
         $categoria = $documento->categoria;
         $grupoId = $documento->grupo_id;
 
@@ -594,10 +594,10 @@ class DocumentoController extends Controller
 
         $novoDocumento->save();
 
-        foreach ($documento->anexos as $anexo) {
-            $novoAnexo = $anexo->replicate(['id', 'created_at', 'updated_at']);
-            $novoAnexo->documento_id = $novoDocumento->id;
-            $novoAnexo->save();
+        foreach ($documento->arquivos as $arquivo) {
+            $novoArquivo = $arquivo->replicate(['id', 'created_at', 'updated_at']);
+            $novoArquivo->documento_id = $novoDocumento->id;
+            $novoArquivo->save();
         }
 
         session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));

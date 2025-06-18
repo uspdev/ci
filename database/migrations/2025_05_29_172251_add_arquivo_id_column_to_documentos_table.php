@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('documentos', function (Blueprint $table) {
-            $table->unsignedBigInteger('anexo_id')->nullable();
+            $table->unsignedBigInteger('arquivo_id')->nullable();
             
             $table->foreign('categoria_id')->references('id')->on('categorias');
             $table->foreign('template_id')->references('id')->on('templates');
-            $table->foreign('anexo_id')->references('id')->on('anexos');
+            $table->foreign('arquivo_id')->references('id')->on('arquivos');
         });
     }
 
@@ -28,8 +28,8 @@ return new class extends Migration
         Schema::table('documentos', function (Blueprint $table) {
             $table->dropForeign(['categoria_id']);
             $table->dropForeign(['template_id']);
-            $table->dropForeign(['anexo_id']);
-            $table->dropColumn('anexo_id');
+            $table->dropForeign(['arquivo_id']);
+            $table->dropColumn('arquivo_id');
         });
     }
 };

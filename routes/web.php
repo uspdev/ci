@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\TemplateController;
-use App\Http\Controllers\AnexoController;
+use App\Http\Controllers\ArquivoController;
 use App\Http\Controllers\DocumentoController;
 
 /*
@@ -59,15 +59,15 @@ Route::prefix('documentos')->name('documento.')->middleware('auth')->group(funct
     Route::put('/{id}', [DocumentoController::class, 'update'])->name('update');
     Route::patch('/{id}/finalizar', [DocumentoController::class, 'finalizar'])->name('finalizar');
     Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('destroy');
-    Route::post('/{id}/anexo', [DocumentoController::class, 'uploadAnexo'])->name('anexo.upload');
+    Route::post('/{id}/arquivo', [DocumentoController::class, 'uploadArquivo'])->name('arquivo.upload');
     Route::get('/atividades/{id}', [DocumentoController::class, 'detalharAtividade'])->name('atividade');
     Route::get('{id}/pdf', [DocumentoController::class, 'gerarPdf'])->name('pdf');
     Route::post('/{id}/copy', [DocumentoController::class, 'copy'])->name('copy');
 });
 
-Route::prefix('anexos')->name('anexo.')->middleware('auth')->group(function () {
-    Route::post('/{id}', [AnexoController::class, 'upload'])->name('upload');
-    Route::delete('/{id}', [AnexoController::class, 'destroy'])->name('destroy');
+Route::prefix('arquivos')->name('arquivo.')->middleware('auth')->group(function () {
+    Route::post('/{id}', [ArquivoController::class, 'upload'])->name('upload');
+    Route::delete('/{id}', [ArquivoController::class, 'destroy'])->name('destroy');
 });
 
 Route::prefix('templates')->name('template.')->middleware('auth')->group(function () {

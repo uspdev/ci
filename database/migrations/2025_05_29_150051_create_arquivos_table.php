@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('anexos', function (Blueprint $table) {
+        Schema::create('arquivos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('documento_id');
             $table->string('nome_original');
             $table->string('caminho', 500);
             $table->string('tipo_mime', 100);
             $table->bigInteger('tamanho');
-            $table->enum('tipo_anexo', ['upload', 'gerado']);
+            $table->enum('tipo_arquivo', ['upload', 'gerado']);
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
             
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('anexos');
+        Schema::dropIfExists('arquivos');
     }
 };

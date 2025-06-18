@@ -90,24 +90,24 @@
         </div>
       </div>
 
-      @if ($documento->anexos->count() > 0)
+      @if ($documento->arquivos->count() > 0)
         <div class="mb-4">
-          <h5>Anexos</h5>
+          <h5>Arquivos</h5>
           <div class="list-group">
-            @foreach ($documento->anexos as $anexo)
+            @foreach ($documento->arquivos as $arquivo)
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>{{ $anexo->nome_original }}</strong>
+                  <strong>{{ $arquivo->nome_original }}</strong>
                   <br>
                   <small class="text-muted">
-                    Tamanho: {{ number_format($anexo->tamanho / 1024, 2) }} KB |
-                    Tipo: {{ $anexo->tipo_mime }} |
-                    Adicionado em: {{ $anexo->created_at->format('d/m/Y H:i') }}
+                    Tamanho: {{ number_format($arquivo->tamanho / 1024, 2) }} KB |
+                    Tipo: {{ $arquivo->tipo_mime }} |
+                    Adicionado em: {{ $arquivo->created_at->format('d/m/Y H:i') }}
                   </small>
                 </div>
                 <div>
-                  <span class="badge bg-secondary me-2 text-white">{{ ucfirst($anexo->tipo_anexo) }}</span>
-                  <a href=".{{ Storage::url($anexo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <span class="badge bg-secondary me-2 text-white">{{ ucfirst($arquivo->tipo_arquivo) }}</span>
+                  <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-download"></i> Download
                   </a>
                 </div>

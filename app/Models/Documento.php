@@ -25,7 +25,7 @@ class Documento extends Model
         'mensagem',
         'finalizado',
         'data_finalizacao',
-        'anexo_id',
+        'arquivo_id',
         'categoria_id',
         'user_id',
         'finalizer_user_id',
@@ -51,7 +51,7 @@ class Documento extends Model
         'mensagem',
         'finalizado',
         'data_finalizacao',
-        'anexo_id',
+        'arquivo_id',
         'categoria_id',
         'user_id',
         'finalizer_user_id',
@@ -84,8 +84,8 @@ class Documento extends Model
         return $this->belongsTo(Template::class, 'template_id');
     }
 
-    public function anexos(): HasMany
+    public function arquivos(): HasMany
     {
-        return $this->hasMany(Anexo::class, 'documento_id');
+        return $this->hasMany(Arquivo::class, 'documento_id');
     }
 }

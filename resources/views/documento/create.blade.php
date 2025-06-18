@@ -96,8 +96,8 @@
         </div>
 
         <div class="mb-3">
-          <label for="anexos" class="form-label">Adicionar Anexos</label>
-          <input type="file" class="form-control" id="anexos" name="anexos[]" multiple>
+          <label for="arquivos" class="form-label">Adicionar Arquivos</label>
+          <input type="file" class="form-control" id="arquivos" name="arquivos[]" multiple>
           <small class="form-text text-muted">Você pode selecionar mais de um arquivo.</small>
         </div>
 
@@ -116,20 +116,20 @@
         </div>
       </form>
 
-      @if (isset($documento) && $documento->anexos->count() > 0)
+      @if (isset($documento) && $documento->arquivos->count() > 0)
         <div class="mt-3">
-          <h5>Anexos Existentes</h5>
+          <h5>Arquivos Existentes</h5>
           <div class="list-group">
-            @foreach ($documento->anexos as $anexo)
+            @foreach ($documento->arquivos as $arquivo)
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>{{ $anexo->nome_original }}</strong>
-                  <small class="text-muted">({{ number_format($anexo->tamanho / 1024, 2) }} KB)</small>
+                  <strong>{{ $arquivo->nome_original }}</strong>
+                  <small class="text-muted">({{ number_format($arquivo->tamanho / 1024, 2) }} KB)</small>
                 </div>
                 <div>
-                  <span class="badge bg-secondary text-white">{{ $anexo->tipo_anexo }}</span>
-                  <form action="{{ route('anexo.destroy', $anexo->id) }}" method="POST" style="display:inline;"
-                    onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');">
+                  <span class="badge bg-secondary text-white">{{ $arquivo->tipo_arquivo }}</span>
+                  <form action="{{ route('arquivo.destroy', $arquivo->id) }}" method="POST" style="display:inline;"
+                    onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger ms-2">

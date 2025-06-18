@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Anexo;
+use App\Models\Documento;
+use App\Models\Arquivo;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
-class AnexoController extends Controller
+class ArquivoController extends Controller
 {
     /**
-     * Upload de anexo para documento
+     * Upload de arquivo para documento
      * 
      * @param Request $request
      * @param int $id
@@ -19,7 +22,7 @@ class AnexoController extends Controller
         $documento = Documento::findOrFail($id);
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para adicionar anexos a este documento.');
+            abort(403, 'Você não tem permissão para adicionar arquivos a este documento.');
         }
 
         $request->validate([
@@ -29,42 +32,42 @@ class AnexoController extends Controller
         $arquivo = $request->file('arquivo');
         $nomeOriginal = $arquivo->getClientOriginalName();
         $nomeArquivo = time() . '_' . $nomeOriginal;
-        $caminho = $arquivo->storeAs('documentos/anexos', $nomeArquivo, 'public');
+        $caminho = $arquivo->storeAs('documentos/arquivos', $nomeArquivo, 'public');
 
-        Anexo::create([
+        Arquivo::create([
             'documento_id' => $documento->id,
             'nome_original' => $nomeOriginal,
             'caminho' => $caminho,
             'tipo_mime' => $arquivo->getMimeType(),
             'tamanho' => $arquivo->getSize(),
-            'tipo_anexo' => 'upload',
+            'tipo_arquivo' => 'upload',
             'user_id' => Auth::id(),
         ]);
 
-        session()->flash('alert-success', 'Anexo adicionado com sucesso!');
+        session()->flash('alert-success', 'Arquivo adicionado com sucesso!');
         return redirect()->route('documento.edit', $id);
     }
 
     public function destroy($id)
     {
-        $anexo = Anexo::findOrFail($id);
-        $documento = $anexo->documento;
+        $arquivo = Arquivo::findOrFail($id);
+        $documento = $arquivo->documento;
 
-        if ($anexo->caminho) {
-            \Storage::disk('public')->delete($anexo->caminho);
+        if ($arquivo->caminho) {
+            \Storage::disk('public')->delete($arquivo->caminho);
         }
 
-        $nome = $anexo->nome_original;
+        $nome = $arquivo->nome_original;
 
-        $anexo->delete();
+        $arquivo->delete();
 
         activity()
             ->performedOn($documento)
             ->causedBy(auth()->user())
-            ->withProperties(['anexo' => $nome])
-            ->log("Anexo excluído: {$nome}");
+            ->withProperties(['arquivo' => $nome])
+            ->log("Arquivo excluído: {$nome}");
 
-        session()->flash('alert-success', 'Anexo excluído com sucesso e ação registrada no histórico.');
+        session()->flash('alert-success', 'Arquivo excluído com sucesso e ação registrada no histórico.');
         return redirect()->back();
     }
 }
