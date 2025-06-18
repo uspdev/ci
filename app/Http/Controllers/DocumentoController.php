@@ -21,14 +21,10 @@ class DocumentoController extends Controller
      * Gera código automático para documento
      * Formato: CATEGORIA Nº XXX/AAAA/GRUPO-e
      */
-    private function gerarCodigo(Categoria $categoria, int $grupoId, int $sequencial, int $ano): string
+    private function gerarCodigo(string $prefixo, int $sequencial, int $ano): string
     {
-        $grupo = Grupo::findOrFail($grupoId);
-        $categoriaPrefixo = iconv('UTF-8', 'ASCII//TRANSLIT', $categoria->prefixo);
         $numero = str_pad($sequencial, 3, '0', STR_PAD_LEFT);
-        $grupoNome = strtoupper($grupo->name);
-
-        return "{$categoriaPrefixo} Nº {$numero}/{$ano}/{$grupoNome}-e";
+        return "{$prefixo} Nº {$numero}/{$ano}";
     }
 
     /**
@@ -99,6 +95,7 @@ class DocumentoController extends Controller
         }
 
         $request->validate([
+            'prefixo' => 'string|max:255|nullable',
             'sequencial' => 'integer|nullable',
             'ano' => 'integer|nullable',
             'codigo' => 'string|max:255|nullable',
@@ -158,7 +155,7 @@ class DocumentoController extends Controller
             $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
 
             $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
-            $codigo = $this->gerarCodigo($categoria, $grupoId, $sequencial, $ano);
+            $codigo = $this->gerarCodigo($request->prefixo, $sequencial, $ano);
 
             $updateData = [
                 'codigo' => $codigo,
@@ -180,7 +177,7 @@ class DocumentoController extends Controller
                     $codigo = $request->codigo;
                 }
             } elseif($request->ano && $request->sequencial){
-                $codigo = $this->gerarCodigo($categoria, $grupoId, $request->sequencial, $request->ano);
+                $codigo = $this->gerarCodigo($request->prefixo, $request->sequencial, $request->ano);
                 $codigoExists = Documento::where('categoria_id', $categoria->id)
                     ->where('grupo_id', $grupoId)->where('codigo', $codigo)->exists();
                 if(!$codigoExists){
@@ -263,6 +260,7 @@ class DocumentoController extends Controller
         }
 
         $request->validate([
+            'prefixo' => 'string|max:255|nullable',
             'sequencial' => 'integer|nullable',
             'ano' => 'integer|nullable',
             'codigo' => 'string|max:255|nullable',
@@ -322,7 +320,7 @@ class DocumentoController extends Controller
                 $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
             }
 
-            $codigo = $this->gerarCodigo($categoria, $categoria->grupo_id, $sequencial, $ano);
+            $codigo = $this->gerarCodigo($request->prefixo, $sequencial, $ano);
 
             $codigoExists = Documento::where('categoria_id', $categoria->id)
                 ->where('grupo_id', $categoria->grupo_id)
@@ -358,7 +356,7 @@ class DocumentoController extends Controller
                 $updateData['codigo'] = $request->codigo;
                 $codigo = $request->codigo;
             } elseif ($request->ano && $request->sequencial) {
-                $codigo = $this->gerarCodigo($categoria, $categoria->grupo_id, $request->sequencial, $request->ano);
+                $codigo = $this->gerarCodigo($request->prefixo, $request->sequencial, $request->ano);
                 $codigoExists = Documento::where('categoria_id', $categoria->id)
                     ->where('grupo_id', $categoria->grupo_id)
                     ->where('codigo', $codigo)
@@ -585,7 +583,8 @@ class DocumentoController extends Controller
             $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
             $novoDocumento->ano = $ano;
             $novoDocumento->sequencial = $sequencial;
-            $novoDocumento->codigo = $this->gerarCodigo($categoria, $grupoId, $sequencial, $ano);
+            $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
+            $novoDocumento->codigo = $this->gerarCodigo($prefixo, $sequencial, $ano);
         } else {
             $novoDocumento->ano = null;
             $novoDocumento->sequencial = null;
