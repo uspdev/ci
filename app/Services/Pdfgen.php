@@ -103,11 +103,70 @@ class Pdfgen
         return $this->html; //dados
     }
 
+    public function parseBasicHtml($html, $pdf)
+    {
+        $html = str_replace(["\r", "\n"], '', $html);
+
+        $inList = false;
+        $bold = false;
+        $italic = false;
+
+        $parts = preg_split('/(<[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        foreach ($parts as $part) {
+            switch (strtolower($part)) {
+                case '<ul>':
+                    $inList = true;
+                    break;
+                case '</ul>':
+                    $inList = false;
+                    break;
+                case '<li>':
+                    if ($inList) {
+                        $pdf->Ln(6);
+                        $pdf->Cell(5, 6, '◦', 2, 0);
+                    }
+                    break;
+                case '</li>':
+                    $pdf->Ln(5);
+                    break;
+                case '<br>':
+                case '<br/>':
+                case '<br />':
+                    $pdf->Ln(5);
+                    break;
+                case '<b>':
+                case '<strong>':
+                    $bold = true;
+                    $pdf->SetFont('', ($italic ? 'BI' : 'B'));
+                    break;
+                case '</b>':
+                case '</strong>':
+                    $bold = false;
+                    $pdf->SetFont('', ($italic ? 'I' : ''));
+                    break;
+                case '<i>':
+                    $italic = true;
+                    $pdf->SetFont('', ($bold ? 'BI' : 'I'));
+                    break;
+                case '</i>':
+                    $italic = false;
+                    $pdf->SetFont('', ($bold ? 'B' : ''));
+                    break;
+                default:
+                    $pdf->Cell(0, 6, strip_tags($part), 0, 2, 'L');
+            }
+        }
+    }
+
+
     public function pdfBuild($dest = 'I', $cfg = [], $fieldMap = null, $path)
     {
         if($this->isPdfTemplate()) {
             $pdf = new \setasign\Fpdi\Tfpdf\Fpdi();
             $pdf->AddFont('DejaVu','','DejaVuSans.ttf',true);
+            $pdf->AddFont('DejaVu','B','DejaVuSans-Bold.ttf',true);
+            $pdf->AddFont('DejaVu','I','DejaVuSans-Oblique.ttf',true);
+            $pdf->AddFont('DejaVu','BI','DejaVuSans-BoldOblique.ttf',true);
             $pageCount = $pdf->setSourceFile($this->template);
             for ($pagenum = 1; $pagenum <= $pageCount; $pagenum++) {
                 $tpl = $pdf->importPage($pagenum);
@@ -126,7 +185,13 @@ class Pdfgen
                     if (!empty($this->data[$campo]) && ($info['page'] ?? 1) == $pagenum) {
                         $pdf->SetFont('DejaVu', '', $info['font']);
                         $pdf->SetXY($info['x'], $info['y']);
-                        $pdf->Cell(0, 10, $this->data[$campo], 0, 1, 'L');
+                        $valor = $this->data[$campo];
+
+                        if ($valor != strip_tags($valor)) {
+                            $this->parseBasicHtml($valor, $pdf);
+                        } else {
+                            $pdf->Cell(0, 10, $valor, 0, 1, 'L');
+                        }
                     }
                 }
             }
@@ -143,7 +208,6 @@ class Pdfgen
             if ($dest === 'D') {
                 return $pdf->Output('document.pdf', 'D');
             } elseif ($dest === 'F') {
-                // $path = storage_path('app/document.pdf');
                 $pdf->Output($path, 'F');
                 return $path;
             } else {
