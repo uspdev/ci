@@ -15,13 +15,13 @@
         </form>
         @if (isset($documento->template))
           <a href="{{ route('documento.pdf', $documento->id) }}" class="btn btn-outline-secondary" target="_blank">
-            <i class="fas fa-file-pdf"></i> 
+            <i class="fas fa-file-pdf"></i>
           </a>
         @endif
         @unless ($documento->finalizado)
           <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}"
             class="btn btn-outline-primary">
-            <i class="fas fa-edit"></i> 
+            <i class="fas fa-edit"></i>
           </a>
           <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
             @csrf
@@ -34,7 +34,7 @@
         @else
           <span class="badge bg-success fs-6 text-white">Documento Finalizado</span>
         @endunless
-        <a href="{{ route('documento.index') }}" class="btn btn-secondary">
+        <a href="{{ route('documento.index', ['categoria' => $documento->categoria_id]) }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
         </a>
       </div>
@@ -45,34 +45,16 @@
           <strong>Código:</strong> {{ $documento->codigo }}
         </div>
         <div class="col-md-6 mt-2">
+          <strong>Data do Documento:</strong> {{ $documento->data_documento->format('d/m/Y') }}
+        </div>
+        <div class="col-md-6 mt-2">
           <strong>Destinatário:</strong> {{ $documento->destinatario }}
         </div>
         <div class="col-md-6 mt-2">
           <strong>Remetente:</strong> {{ $documento->remetente }}
         </div>
         <div class="col-md-6 mt-2">
-          <strong>Data do Documento:</strong> {{ $documento->data_documento->format('d/m/Y') }}
-        </div>
-        <div class="col-md-6 mt-2">
           <strong>Categoria:</strong> {{ $documento->categoria->nome }}
-        </div>
-        <div class="col-md-6 mt-2">
-          <strong>Grupo:</strong> {{ $documento->categoria->grupo->name }}
-        </div>
-        @if ($documento->template)
-          <div class="col-md-6 mt-2">
-            <strong>Template:</strong> {{ $documento->template->nome }}
-          </div>
-        @endif
-        <div class="col-md-6 mt-2">
-          <strong>Status:</strong>
-          @if ($documento->finalizado)
-            Finalizado por
-            {{ \Uspdev\Replicado\Pessoa::nomeCompleto(\App\Models\User::find($documento->finalizer_user_id)->codpes) }}
-            em {{ $documento->data_finalizacao->format('d/m/Y H:i') }}
-          @else
-            <span class="badge bg-warning">Em andamento</span>
-          @endif
         </div>
       </div>
 
@@ -107,7 +89,8 @@
                 </div>
                 <div>
                   <span class="badge bg-secondary me-2 text-white">{{ ucfirst($arquivo->tipo_arquivo) }}</span>
-                  <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank"
+                    class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-download"></i> Download
                   </a>
                 </div>
@@ -117,18 +100,35 @@
         </div>
       @endif
 
-      <div class="row mt-4 pt-3 border-top">
-        <div class="col-md-6">
-          <small class="text-muted">
-            <i class="fas fa-plus-circle"></i> <strong>Criado em:</strong>
-            {{ $documento->created_at->format('d/m/Y H:i') }}
-          </small>
-        </div>
-        <div class="col-md-6">
-          <small class="text-muted">
-            <i class="fas fa-edit"></i> <strong>Atualizado em:</strong> {{ $documento->updated_at->format('d/m/Y H:i') }}
-          </small>
-        </div>
+      <div class="mt-4 pt-3 border-top">
+        <small class="text-muted d-flex align-items-center flex-wrap">
+          <span class="mr-4">
+            <i class="fas fa-plus-circle"></i>
+            <strong>Criado em:</strong> {{ $documento->created_at->format('d/m/Y H:i') }}
+          </span>
+          <span class="mr-4">
+            <i class="fas fa-edit"></i>
+            <strong>Atualizado em:</strong> {{ $documento->updated_at->format('d/m/Y H:i') }}
+          </span>
+          <span class="mr-4">
+            <strong>Grupo:</strong> {{ $documento->categoria->grupo->name }}
+          </span>
+          <span class="mr-4">
+            <strong>Status:</strong>
+            @if ($documento->finalizado)
+              Finalizado por
+              {{ \Uspdev\Replicado\Pessoa::nomeCompleto(\App\Models\User::find($documento->finalizer_user_id)->codpes) }}
+              em {{ $documento->data_finalizacao->format('d/m/Y H:i') }}
+            @else
+              Em andamento
+            @endif
+          </span>
+          @if ($documento->template)
+            <span class="mr-4">
+              <strong>Template:</strong> {{ $documento->template->nome }}
+            </span>
+          @endif
+        </small>
       </div>
     </div>
   </div>

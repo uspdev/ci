@@ -36,6 +36,31 @@ class CategoriaController extends Controller
         return view('categoria.index', compact('categorias', 'grupo'));
     }
 
+    /**
+     * Exibe a lista de categorias do grupo ativo para gerência
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
+     */
+    public function admin()
+    {
+        $this->authorize('grupoManager');
+        \UspTheme::activeUrl('categorias/admin');
+
+        $grupoId = session('grupo_id');
+        
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+            abort(403, 'Você não tem permissão para acessar este grupo.');
+        }
+
+        $categorias = Categoria::where('grupo_id', $grupoId)->get();
+
+        $grupo = Grupo::findOrFail($grupoId);
+        return view('categoria.admin', compact('categorias', 'grupo'));
+    }
 
     /**
      * Exibe o formulário de criação de nova categoria

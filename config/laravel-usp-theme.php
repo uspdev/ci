@@ -11,11 +11,6 @@ $menu = [
         'can' => 'user'
     ],
     [
-        'text' => 'Documentos',
-        'url' => 'documentos',
-        'can' => 'user'
-    ],
-    [
         'text' => 'Templates',
         'url' => 'templates',
         'can' => 'user'
@@ -23,6 +18,11 @@ $menu = [
 ];
 
 $right_menu = [
+    [
+        'text' => '<span class="text-danger">Gerenciar categorias</span>',
+        'url' => 'categorias/admin',
+        'can' => 'grupoManager'
+    ],
     [
         'key' => 'grupos',
     ],

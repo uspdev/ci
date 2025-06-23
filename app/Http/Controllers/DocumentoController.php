@@ -30,7 +30,7 @@ class DocumentoController extends Controller
     /**
      * Exibe a lista de documentos do grupo ativo
      */
-    public function index(Request $request)
+    public function index($categoria, $ano = null)
     {
         $this->authorize('grupoManager');
         \UspTheme::activeUrl('documentos');
@@ -44,17 +44,24 @@ class DocumentoController extends Controller
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
             abort(403, 'Você não tem permissão para acessar este grupo.');
         }
-
-        $query = Documento::where('grupo_id', $grupoId)->with(['categoria', 'template']);
-
-        if ($request->filled('categoria_id')) {
-            $query->where('categoria_id', $request->categoria_id);
+        if (!$ano){
+            $ano = date('Y'); // verificar ano nullable
         }
+
+        $query = Documento::where('grupo_id', $grupoId)
+            ->where('categoria_id', $categoria)
+            ->where('ano', $ano)
+            ->with(['categoria', 'template']);
+
+        
+        $anos = \App\Models\Documento::whereNotNull('ano')
+            ->distinct()
+            ->orderBy('ano', 'desc')
+            ->pluck('ano');
 
         $documentos = $query->get();
 
-        $categorias = Categoria::where('grupo_id', $grupoId)->get();
-        return view('documento.index', compact('documentos', 'categorias'));
+        return view('documento.index', compact('documentos', 'categoria', 'anos', 'ano'));
     }
 
 
@@ -114,9 +121,8 @@ class DocumentoController extends Controller
         }
 
         $codigo = null;
-        $updateData = [];
 
-        $documento = Documento::create([
+        $docData = [
             'destinatario' => $request->destinatario,
             'remetente' => $request->remetente,
             'data_documento' => $request->data_documento,
@@ -127,22 +133,7 @@ class DocumentoController extends Controller
             'arquivo_id' => $request->arquivo_id,
             'grupo_id' => $grupoId,
             'user_id' => Auth::id(),
-        ]);
-
-        if ($request->hasFile('arquivos')) {
-            foreach ($request->file('arquivos') as $file) {
-                $path = $file->store('documentos/arquivos', 'public');
-                $documento->arquivos()->create([
-                    'nome_original' => $file->getClientOriginalName(),
-                    'tamanho' => $file->getSize(),
-                    'tipo_mime' => $file->getClientMimeType(),
-                    'tipo_arquivo' => 'upload',
-                    'caminho' => $path,
-                    'user_id' => Auth::id(),
-                ]);
-            }
-        }
-
+        ];
 
         if($categoria->controlar_sequencial){
             $ano = date('Y');
@@ -157,23 +148,21 @@ class DocumentoController extends Controller
             $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
             $codigo = $this->gerarCodigo($request->prefixo, $sequencial, $ano);
 
-            $updateData = [
-                'codigo' => $codigo,
-                'sequencial' => $sequencial,
-                'ano' => $ano,
-            ];
+            $docData['codigo'] = $codigo;
+            $docData['sequencial'] = $sequencial;
+            $docData['ano'] = $ano;
         } else {
             if($request->ano){
-                $updateData['ano'] = $request->ano;
+                $docData['ano'] = $request->ano;
             }
             if($request->sequencial){
-                $updateData['sequencial'] = $request->sequencial;
+                $docData['sequencial'] = $request->sequencial;
             }
             if($request->codigo){
                 $codigoExists = Documento::where('categoria_id', $categoria->id)
                     ->where('grupo_id', $grupoId)->where('codigo', $request->codigo)->exists();
                 if(!$codigoExists){
-                    $updateData['codigo'] = $request->codigo;
+                    $docData['codigo'] = $request->codigo;
                     $codigo = $request->codigo;
                 }
             } elseif($request->ano && $request->sequencial){
@@ -181,16 +170,29 @@ class DocumentoController extends Controller
                 $codigoExists = Documento::where('categoria_id', $categoria->id)
                     ->where('grupo_id', $grupoId)->where('codigo', $codigo)->exists();
                 if(!$codigoExists){
-                    $updateData['codigo'] = $codigo;
+                    $docData['codigo'] = $codigo;
                 } else {
                     $codigo = null;
                 }
             }
         }
 
-        if (!empty($updateData)) {
-            $documento->update($updateData);
+        $documento = Documento::create($docData);
+
+        if ($request->hasFile('arquivos')) {
+            foreach ($request->file('arquivos') as $file) {
+                $path = $file->store('documentos/arquivos', 'public');
+                $documento->arquivos()->create([
+                    'nome_original' => $file->getClientOriginalName(),
+                    'tamanho' => $file->getSize(),
+                    'tipo_mime' => $file->getClientMimeType(),
+                    'tipo_arquivo' => 'upload',
+                    'caminho' => $path,
+                    'user_id' => Auth::id(),
+                ]);
+            }
         }
+        
 
         session()->flash('alert-success', 'Documento criado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
         return redirect()->route('documento.show', $documento);
@@ -427,11 +429,11 @@ class DocumentoController extends Controller
         foreach ($documento->arquivos as $arquivo) {
             Storage::delete($arquivo->caminho);
         }
-
+        $categoria = $documento->categoria_id;
         $documento->delete();
 
         session()->flash('alert-success', 'Documento removido com sucesso!');
-        return redirect()->route('documento.index');
+        return redirect()->route('documento.index', $categoria);
     }
 
     public function detalharAtividade($id)

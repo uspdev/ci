@@ -176,7 +176,7 @@ class GrupoController extends Controller
             'grupo_id' => $grupo->id
         ]);
 
-        return redirect(route('documento.index'));
+        return redirect(route('categoria.index'));
     }
 
     /**

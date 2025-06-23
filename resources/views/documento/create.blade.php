@@ -118,7 +118,7 @@
               Visualizar
             </a>
           @endif
-          <a href="{{ route('documento.index') }}" class="btn btn-secondary ml-2">
+          <a href="{{ route('documento.index', ['categoria' => $categoria]) }}" class="btn btn-secondary ml-2">
             <i class="fas fa-arrow-left"></i> Voltar
           </a>
         </div>

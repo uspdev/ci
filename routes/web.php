@@ -42,6 +42,7 @@ Route::fallback(function(){
 
 Route::prefix('categorias')->name('categoria.')->middleware('auth')->group(function () {
     Route::get('/', [CategoriaController::class, 'index'])->name('index');
+    Route::get('/admin', [CategoriaController::class, 'admin'])->name('admin');
     Route::get('/create', [CategoriaController::class, 'create'])->name('create');
     Route::post('/', [CategoriaController::class, 'store'])->name('store');
     Route::get('/{id}', [CategoriaController::class, 'show'])->name('show');
@@ -51,11 +52,11 @@ Route::prefix('categorias')->name('categoria.')->middleware('auth')->group(funct
 });
 
 Route::prefix('documentos')->name('documento.')->middleware('auth')->group(function () {
-    Route::get('/', [DocumentoController::class, 'index'])->name('index');
+    Route::get('categoria/{categoria}/{ano?}', [DocumentoController::class, 'index'])->name('index');
     Route::get('{categoria}/create', [DocumentoController::class, 'create'])->name('create');
-    Route::post('/{categoria}', [DocumentoController::class, 'store'])->name('store');
+    Route::post('categoria/{categoria}', [DocumentoController::class, 'store'])->name('store');
     Route::get('/{id}', [DocumentoController::class, 'show'])->name('show');
-    Route::get('{categoria}/{id}/edit', [DocumentoController::class, 'edit'])->name('edit');
+    Route::get('categoria/{categoria}/{id}/edit', [DocumentoController::class, 'edit'])->name('edit');
     Route::put('/{id}', [DocumentoController::class, 'update'])->name('update');
     Route::patch('/{id}/finalizar', [DocumentoController::class, 'finalizar'])->name('finalizar');
     Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('destroy');

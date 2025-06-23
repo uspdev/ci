@@ -3,57 +3,56 @@
 @section('content')
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h4 class="mb-0">Documentos</h4>
-      <div class="dropdown">
-        <button class="btn btn-success dropdown-toggle" type="button" id="novoDocumentoDropdown" data-toggle="dropdown"
-          aria-haspopup="true" aria-expanded="false">
-          Novo Documento
-        </button>
-        <div class="dropdown-menu" aria-labelledby="novoDocumentoDropdown">
-          @foreach ($categorias as $categoria)
-            <a class="dropdown-item" href="{{ route('documento.create', ['categoria' => $categoria->id]) }}">
-              {{ $categoria->nome }}
-            </a>
-          @endforeach
+      <div class="d-flex align-items-center">
+        <h4 class="mb-0">Documentos</h4>
+        <div class="dropdown ml-2 mt-1">
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="novoDocumentoDropdown" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            {{ $ano }}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="novoDocumentoDropdown">
+            @foreach ($anos as $ano)
+              <a class="dropdown-item" href="{{ route('documento.index', ['categoria' => $categoria, 'ano' => $ano]) }}">
+                {{ $ano }}
+              </a>
+            @endforeach
+          </div>
         </div>
       </div>
-
+      <a href="{{ route('documento.create', ['categoria' => $categoria]) }}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Novo Documento
+      </a>
     </div>
     <div class="card-body">
       <table id="documentos-table" class="table table-striped table-bordered">
         <thead>
           <tr>
+            <th>Sequencial</th>
             <th>Código</th>
-            <th>Destinatário</th>
-            <th>Assunto</th>
-            <th>Categoria</th>
-            <th>Status</th>
             <th>Data</th>
+            <th>Destinatário</th>
+            <th>Remetente</th>
+            <th>Assunto</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           @foreach ($documentos as $documento)
             <tr>
+              <td>{{ $documento->sequencial }}</td>
               <td>{{ $documento->codigo }}</td>
-              <td>{{ $documento->destinatario }}</td>
-              <td>{{ Str::limit($documento->assunto, 30) }}</td>
-              <td>{{ $documento->categoria->nome }}</td>
-              <td>
-                @if ($documento->finalizado)
-                  <span class="badge bg-success text-white">Finalizado</span>
-                @else
-                  <span class="badge bg-warning">Em andamento</span>
-                @endif
-              </td>
               <td>{{ $documento->data_documento->format('d/m/Y') }}</td>
+              <td>{{ $documento->destinatario }}</td>
+              <td>{{ $documento->remetente }}</td>
+              <td>{{ Str::limit($documento->assunto, 30) }}</td>
               <td>
                 <div class="btn-group" role="group">
                   <a href="{{ route('documento.show', $documento) }}" class="btn btn-outline-success btn-sm mr-2 d-flex">
                     <i class="fas fa-eye"></i>
                   </a>
                   @unless ($documento->finalizado)
-                    <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
+                    <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}"
+                      class="btn btn-outline-primary btn-sm mr-2 d-flex">
                       <i class="fas fa-edit"></i>
                     </a>
                     <form action="{{ route('documento.destroy', $documento) }}" method="POST" class="d-inline">

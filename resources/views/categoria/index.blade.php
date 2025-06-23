@@ -11,42 +11,12 @@
       </a>
     </div>
     <div class="card-body">
-      <table id="categorias-table" class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Criado em</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach ($categorias as $categoria)
-            <tr>
-              <td>{{ $categoria->id }}</td>
-              <td>{{ $categoria->nome }}</td>
-              <td>{{ $categoria->created_at->format('d/m/Y H:i') }}</td>
-              <td>
-                <div class="btn-group" role="group">
-                  <a href="{{ route('categoria.show', $categoria) }}" class="btn btn-outline-success btn-sm mr-2 d-flex">
-                    <i class="fas fa-eye"></i>
-                  </a>
-                  <a href="{{ route('categoria.edit', $categoria) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
-                    <i class="fas fa-edit"></i>
-                  </a>
-                  <form action="{{ route('categoria.destroy', $categoria) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger btn-sm d-flex" onclick="return confirm('Tem certeza?')">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
+      @foreach ($categorias as $categoria)
+        <div class="card mb-2">
+          <div class="card-body h5"><a href="{{ route('documento.index', $categoria->id) }}">{{ $categoria->nome }}</a>
+          </div>
+        </div>
+      @endforeach
     </div>
   </div>
 @endsection
