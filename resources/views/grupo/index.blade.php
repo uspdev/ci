@@ -23,7 +23,7 @@
                     @include('grupo.partials.edit-btn')
                     @include('grupo.partials.delete-btn')
                   </td>
-                  <td>{{ $grupo->name }}</td>
+                  <td><a href="grupos/select/{{ $grupo->id }}">{{ $grupo->name }}</a></td>
                   <td>{{ $grupo->description }}</td>
                 </tr>
               @endforeach

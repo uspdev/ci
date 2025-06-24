@@ -53,18 +53,18 @@ class ArquivoController extends Controller
         $arquivo = Arquivo::findOrFail($id);
         $documento = $arquivo->documento;
 
-        if ($arquivo->caminho) {
-            \Storage::disk('public')->delete($arquivo->caminho);
-        }
+        // if ($arquivo->caminho) {
+        //     \Storage::disk('public')->delete($arquivo->caminho);
+        // }
 
         $nome = $arquivo->nome_original;
-
+        $id = $arquivo->id;
         $arquivo->delete();
 
         activity()
             ->performedOn($documento)
             ->causedBy(auth()->user())
-            ->withProperties(['arquivo' => $nome])
+            ->withProperties(['id' => $id, 'arquivo' => $nome])
             ->log("Arquivo excluído: {$nome}");
 
         session()->flash('alert-success', 'Arquivo excluído com sucesso e ação registrada no histórico.');

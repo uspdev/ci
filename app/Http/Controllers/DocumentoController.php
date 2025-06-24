@@ -439,7 +439,12 @@ class DocumentoController extends Controller
     public function detalharAtividade($id)
     {
         $activity = Activity::findOrFail($id);
-
+        if(isset($activity->properties["arquivo"])){
+            $arquivo = Arquivo::withTrashed()->where([
+            'id' => $activity->properties['id']
+            ])->first();
+            return redirect(Storage::url($arquivo->caminho));
+        }
         $documento = Documento::findOrFail($activity->subject_id);
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar este documento.');
