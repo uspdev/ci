@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Storage;
 use \Spatie\Activitylog\Models\Activity;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\Pdfgen;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DocumentCreated;
+use App\Mail\DocumentUpdated;
 
 class DocumentoController extends Controller
 {
@@ -193,6 +196,8 @@ class DocumentoController extends Controller
             }
         }
         
+        $email = \Uspdev\Replicado\Pessoa::email(Auth::user()->codpes);
+        Mail::to($email)->send(new DocumentCreated($documento));
 
         session()->flash('alert-success', 'Documento criado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
         return redirect()->route('documento.show', $documento);
@@ -373,6 +378,9 @@ class DocumentoController extends Controller
         }
 
         $documento->update($updateData);
+        
+        $email = \Uspdev\Replicado\Pessoa::email(Auth::user()->codpes);
+        Mail::to($email)->send(new DocumentUpdated($documento));
 
         session()->flash('alert-success', 'Documento atualizado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
         return redirect()->route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $id]);
@@ -605,6 +613,9 @@ class DocumentoController extends Controller
             $novoArquivo->documento_id = $novoDocumento->id;
             $novoArquivo->save();
         }
+
+        $email = \Uspdev\Replicado\Pessoa::email(Auth::user()->codpes);
+        Mail::to($email)->send(new DocumentCreated($novoDocumento));
 
         session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));
         return redirect()->route('documento.edit', ['categoria' => $novoDocumento->categoria_id, 'id' => $novoDocumento->id]);
