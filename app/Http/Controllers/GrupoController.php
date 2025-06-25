@@ -83,12 +83,12 @@ class GrupoController extends Controller
             'Memorando' => 'MEM',
             'Ofício' => 'OFC'
         ];
-
+        $settings['controlar_sequencial'] = true;
         foreach ($categoriasPadrao as $nomeCategoria => $prefixo) {
             Categoria::create([
                 'nome' => $nomeCategoria,
                 'prefixo' => $prefixo,
-                'controlar_sequencial' => true,
+                'settings' => $settings,
                 'grupo_id' => $grupo->id
             ]);
         }
@@ -97,16 +97,15 @@ class GrupoController extends Controller
     /**
      * Verifica permissão específica do grupo ou acesso de admin e exibe o formulário de edição de grupo
      * 
-     * @param int $grupo_id ID do grupo
+     * @param Grupo $grupo
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function edit($grupo_id)
+    public function edit(Grupo $grupo)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo_id) && ! Gate::allows('manager'))) {
-            return redirect()->route('grupo.show', ['grupo_id' => $grupo_id]);
+        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo->id) && ! Gate::allows('manager'))) {
+            return redirect()->route('grupo.show', $grupo);
         }
 
-        $grupo = Grupo::findOrFail($grupo_id);
         return view('grupo.edit', compact('grupo'));
     }
 
@@ -114,15 +113,14 @@ class GrupoController extends Controller
      * Atualiza os dados de um grupo existente
      * 
      * @param Request $request
-     * @param int $grupo_id
+     * @param Grupo $grupo
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $grupo_id)
+    public function update(Request $request, Grupo $grupo)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo_id) && ! Gate::allows('manager'))) {
-            return redirect()->route('grupo.show', ['grupo_id' => $grupo_id]);
+        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo->id) && ! Gate::allows('manager'))) {
+            return redirect()->route('grupo.show', $grupo);
         }
-        $grupo = Grupo::findOrFail($grupo_id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -135,21 +133,20 @@ class GrupoController extends Controller
         ]);
         Grupo::setGrupoSession();
         session()->flash('alert-success', 'Grupo atualizado com sucesso!');
-        return redirect()->route('grupo.edit', ['grupo_id' => $grupo_id]);
+        return redirect()->route('grupo.edit', $grupo);
     }
 
     /**
      * Remove permanentemente um grupo, a permissão associada e revoga acesso de todos usuários
      * 
-     * @param int $grupo_id
+     * @param Grupo $grupo
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($grupo_id)
+    public function destroy(Grupo $grupo)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo_id) && ! Gate::allows('manager'))) {
-            return redirect()->route('grupo.show', ['grupo_id' => $grupo_id]);
+        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo->id) && ! Gate::allows('manager'))) {
+            return redirect()->route('grupo.show', $grupo);
         }
-        $grupo = Grupo::findOrFail($grupo_id);
 
         $permission = Permission::findByName('manager_' . $grupo->id);
         $permission->users()->detach();
@@ -165,13 +162,11 @@ class GrupoController extends Controller
     /**
      * Define o grupo ativo na sessão
      *
-     * @param int $id
+     * @param Grupo $grupo
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function selectGrupo($id)
+    public function selectGrupo(Grupo $grupo)
     {
-        $grupo = Grupo::find($id);
-
         session([
             'grupo_id' => $grupo->id
         ]);
@@ -184,28 +179,27 @@ class GrupoController extends Controller
      * 
      * Manipula permissões específicas do grupo (manager_{id})
 
-     * @param int $grupo_id
+     * @param Grupo $grupo
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function editarResponsavel($grupo_id, Request $request)
+    public function editarResponsavel(Grupo $grupo, Request $request)
     {
         $codpes_rem = $request->input('codpes_rem');
         $codpes_add = $request->input('codpes_add');
-        $grupo_id = $request->input('grupo_id');
 
-        $adminPermission = 'manager_' . $grupo_id;
+        $groupPermission = 'manager_' . $grupo->id;
         $user = Auth::user();
 
-        if (! $user->hasPermissionTo($adminPermission) && ! Gate::allows('manager')) {
+        if (! $user->hasPermissionTo($groupPermission) && ! Gate::allows('manager')) {
             return response()->json(['alert-danger' => 'Você não tem permissão para gerenciar este grupo.'], 403);
         }
 
         if ($codpes_rem) {
             $userToRemove = User::where('codpes', $codpes_rem)->first();
             if ($userToRemove) {
-                $userToRemove->revokePermissionTo($adminPermission);
+                $userToRemove->revokePermissionTo($groupPermission);
                 $request->session()->flash('alert-success', 'Usuário removido com sucesso!');
             }
         }
@@ -213,12 +207,12 @@ class GrupoController extends Controller
         if ($codpes_add) {
             $userToAdd = User::findOrCreateFromReplicado($codpes_add);
             if ($userToAdd) {
-                $userToAdd->givePermissionTo($adminPermission);
+                $userToAdd->givePermissionTo($groupPermission);
                 $request->session()->flash('alert-success', 'Usuário adicionado com sucesso!');
             }
         }
 
-        return redirect()->route('grupo.edit', ['grupo_id' => $grupo_id]);
+        return redirect()->route('grupo.edit', $grupo);
     }
 
     /**

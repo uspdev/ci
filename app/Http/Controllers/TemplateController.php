@@ -69,10 +69,8 @@ class TemplateController extends Controller
         return redirect()->route('template.edit', $template);
     }
 
-    public function show($id)
+    public function show(Template $template)
     {
-        $template = Template::with('categorias', 'documentos')->findOrFail($id);
-
         if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para visualizar este template.');
         }
@@ -80,10 +78,8 @@ class TemplateController extends Controller
         return view('template.show', compact('template'));
     }
 
-    public function edit($id)
+    public function edit(Template $template)
     {
-        $template = Template::with('categorias')->findOrFail($id);
-
         if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para editar este template.');
         }
@@ -93,10 +89,8 @@ class TemplateController extends Controller
         return view('template.create', compact('template', 'categorias'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $template)
     {
-        $template = Template::findOrFail($id);
-
         if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para editar este template.');
         }
@@ -133,10 +127,8 @@ class TemplateController extends Controller
         return redirect()->route('template.edit', $template);
     }
 
-    public function destroy($id)
+    public function destroy(Template $template)
     {
-        $template = Template::findOrFail($id);
-
         if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para excluir este template.');
         }
@@ -148,9 +140,8 @@ class TemplateController extends Controller
         return redirect()->route('template.index');
     }
 
-    public function gerarPdf($id)
+    public function gerarPdf(Template $template)
     {
-        $template = Template::findOrFail($id);
         if($template->arquivo){
             return \Illuminate\Support\Facades\Storage::disk('public')->download($template->arquivo);
         } 

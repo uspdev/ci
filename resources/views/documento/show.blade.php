@@ -7,19 +7,19 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Documento: {{ $documento->codigo }}</h4>
       <div>
-        <form action="{{ route('documento.copy', $documento->id) }}" method="POST" style="display:inline;">
+        <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
           @csrf
           <button type="submit" class="btn btn-outline-success ml-2">
             <i class="fas fa-copy"></i>
           </button>
         </form>
         @if (isset($documento->template))
-          <a href="{{ route('documento.pdf', $documento->id) }}" class="btn btn-outline-secondary" target="_blank">
+          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-outline-secondary" target="_blank">
             <i class="fas fa-file-pdf"></i>
           </a>
         @endif
         @unless ($documento->finalizado)
-          <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}"
+          <a href="{{ route('documento.edit', $documento) }}"
             class="btn btn-outline-primary">
             <i class="fas fa-edit"></i>
           </a>
@@ -34,7 +34,7 @@
         @else
           <span class="badge bg-success fs-6 text-white">Documento Finalizado</span>
         @endunless
-        <a href="{{ route('documento.index', ['categoria' => $documento->categoria_id]) }}" class="btn btn-secondary">
+        <a href="{{ route('categoria.docs', ['categoria' => $documento->categoria]) }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
         </a>
       </div>

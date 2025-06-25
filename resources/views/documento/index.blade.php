@@ -6,20 +6,20 @@
       <div class="d-flex align-items-center">
         <h4 class="mb-0">Documentos em {{ \App\Models\Categoria::find($categoria)->nome }}</h4>
         <div class="dropdown ml-2 mt-1">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="novoDocumentoDropdown" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="novoDocumentoDropdown"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{ $ano }}
           </button>
           <div class="dropdown-menu" aria-labelledby="novoDocumentoDropdown">
             @foreach ($anos as $ano)
-              <a class="dropdown-item" href="{{ route('documento.index', ['categoria' => $categoria, 'ano' => $ano]) }}">
+              <a class="dropdown-item" href="{{ route('categoria.docs', ['categoria' => $categoria, 'ano' => $ano]) }}">
                 {{ $ano }}
               </a>
             @endforeach
           </div>
         </div>
       </div>
-      <a href="{{ route('documento.create', ['categoria' => $categoria]) }}" class="btn btn-success">
+      <a href="{{ route('categoria.create.doc', $categoria) }}" class="btn btn-success">
         <i class="fas fa-plus"></i> Novo Documento
       </a>
     </div>
@@ -50,19 +50,25 @@
                   <a href="{{ route('documento.show', $documento) }}" class="btn btn-outline-success btn-sm mr-2 d-flex">
                     <i class="fas fa-eye"></i>
                   </a>
+                  <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-secondary btn-sm mr-2 d-flex">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </form>
                   @unless ($documento->finalizado)
-                    <a href="{{ route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $documento]) }}"
+                    <a href="{{ route('documento.edit', $documento) }}"
                       class="btn btn-outline-primary btn-sm mr-2 d-flex">
                       <i class="fas fa-edit"></i>
                     </a>
-                    <form action="{{ route('documento.destroy', $documento) }}" method="POST" class="d-inline">
+                    {{-- <form action="{{ route('documento.destroy', $documento) }}" method="POST" class="d-inline">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-outline-danger btn-sm d-flex"
                         onclick="return confirm('Tem certeza?')">
                         <i class="fas fa-trash"></i>
                       </button>
-                    </form>
+                    </form> --}}
                   @endunless
                 </div>
               </td>

@@ -14,13 +14,11 @@ class ArquivoController extends Controller
      * Upload de arquivo para documento
      * 
      * @param Request $request
-     * @param int $id
+     * @param Documento $documento
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function upload(Request $request, $id)
+    public function upload(Request $request, Documento $documento)
     {
-        $documento = Documento::findOrFail($id);
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para adicionar arquivos a este documento.');
         }
@@ -45,12 +43,11 @@ class ArquivoController extends Controller
         ]);
 
         session()->flash('alert-success', 'Arquivo adicionado com sucesso!');
-        return redirect()->route('documento.edit', $id);
+        return redirect()->route('documento.edit', $documento);
     }
 
-    public function destroy($id)
+    public function destroy(Arquivo $arquivo)
     {
-        $arquivo = Arquivo::findOrFail($id);
         $documento = $arquivo->documento;
 
         // if ($arquivo->caminho) {

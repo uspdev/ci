@@ -3,7 +3,7 @@
   <div class="card-body">
     @foreach ($activities as $activity)
       {{ $activity->created_at->format('d/m/Y H:i:s') }} |
-      <strong> <a href="{{ route('documento.atividade', $activity->id) }}">
+      <strong> <a href="{{ route('documento.atividade', $activity) }}">
           {{ $activity->description }}</a>
       </strong>
       por {{ \App\Models\User::findOrFail($activity->causer_id)->name }}

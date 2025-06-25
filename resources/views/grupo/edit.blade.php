@@ -37,7 +37,7 @@
     <div class="col-md-4">
       <div class="card h-100">
         <form method="post" id="form-{{ $grupo->id }}"
-          action="{{ route('grupo.editarResponsavel', ['id' => $grupo->id]) }}">
+          action="{{ route('grupo.editarResponsavel', $grupo) }}">
           @csrf
           @method('put')
           <input type="hidden" name="grupo_id" value="{{ $grupo->id }}">

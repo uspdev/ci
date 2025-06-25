@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigo', 50)->nullable();
             $table->integer('sequencial')->nullable();
-            $table->integer('ano')->nullable();
+            $table->integer('ano');
             $table->string('destinatario');
             $table->string('remetente');
             $table->date('data_documento');

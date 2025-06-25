@@ -4,21 +4,21 @@
   <div class="card">
     <div class="card-header">
       <h4 class="mb-0">{{ isset($documento) ? 'Editar documento: ' . $documento->codigo : 'Novo documento' }}</h4>
-      @if (!isset($documento) && \App\Models\Categoria::findOrFail($categoria)->controlar_sequencial == 1)
+      @if (!isset($documento) && $categoria->settings['controlar_sequencial'] == 1)
         <div class="mt-1">O código será gerado automaticamente</div>
       @endif
     </div>
     <div class="card-body">
 
       <form
-        action="{{ isset($documento) ? route('documento.update', $documento) : route('documento.store', ['categoria' => $categoria]) }}"
+        action="{{ isset($documento) ? route('documento.update', $documento) : route('categoria.store.doc', $categoria) }}"
         method="POST" enctype="multipart/form-data">
         @csrf
         @if (isset($documento))
           @method('PUT')
         @endif
 
-        @if (\App\Models\Categoria::findOrFail($categoria)->controlar_sequencial != 1)
+        @if ($categoria->settings['controlar_sequencial'] != 1)
           <div class="mb-3">
             <label for="codigo" class="form-label">Código</label>
             <input type="text" class="form-control" id="codigo" name="codigo"
@@ -44,13 +44,15 @@
         @endif
 
         @php
-          if(isset($documento)) $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
+          if (isset($documento)) {
+              $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
+          }
         @endphp
-          <div class="mb-3">
-            <label for="prefixo" class="form-label">Prefixo</label>
-            <input type="text" class="form-control" id="prefixo" name="prefixo"
-              value="{{ old('prefixo', $prefixo ?? '') }}" required>
-          </div>
+        <div class="mb-3">
+          <label for="prefixo" class="form-label">Prefixo</label>
+          <input type="text" class="form-control" id="prefixo" name="prefixo"
+            value="{{ old('prefixo', $prefixo ?? '') }}" required>
+        </div>
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
@@ -84,7 +86,10 @@
                 <option value="">Nenhum template</option>
                 @foreach ($templates as $template)
                   <option value="{{ $template->id }}"
-                    {{ old('template_id', $documento->template_id ?? '') == $template->id ? 'selected' : '' }}>
+                    {{ old('template_id', $documento->template_id ?? '') == $template->id ||
+                    (count($templates) === 1 && empty(old('template_id', $documento->template_id ?? '')))
+                        ? 'selected'
+                        : '' }}>
                     {{ $template->nome }}
                   </option>
                 @endforeach
@@ -118,7 +123,7 @@
               Visualizar
             </a>
           @endif
-          <a href="{{ route('documento.index', ['categoria' => $categoria]) }}" class="btn btn-secondary ml-2">
+          <a href="{{ route('categoria.docs', $categoria) }}" class="btn btn-secondary ml-2">
             <i class="fas fa-arrow-left"></i> Voltar
           </a>
         </div>
@@ -136,7 +141,7 @@
                 </div>
                 <div>
                   <span class="badge bg-secondary text-white">{{ $arquivo->tipo_arquivo }}</span>
-                  <form action="{{ route('arquivo.destroy', $arquivo->id) }}" method="POST" style="display:inline;"
+                  <form action="{{ route('arquivo.destroy', $arquivo) }}" method="POST" style="display:inline;"
                     onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
                     @csrf
                     @method('DELETE')

@@ -71,7 +71,7 @@ class DocumentoController extends Controller
     /**
      * Exibe o formulário de criação de novo documento
      */
-    public function create($categoria)
+    public function create(Categoria $categoria)
     {
         $this->authorize('grupoManager');
 
@@ -85,7 +85,7 @@ class DocumentoController extends Controller
             abort(403, 'Você não tem permissão para criar documentos neste grupo.');
         }
 
-        $templates = Categoria::findOrFail($categoria)->templates;
+        $templates = $categoria->templates;
         
         return view('documento.create', compact('templates', 'categoria'));
     }
@@ -138,7 +138,7 @@ class DocumentoController extends Controller
             'user_id' => Auth::id(),
         ];
 
-        if($categoria->controlar_sequencial){
+        if($categoria->settings['controlar_sequencial']){
             $ano = date('Y');
             $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
                 ->where('grupo_id', $grupoId)
@@ -157,6 +157,8 @@ class DocumentoController extends Controller
         } else {
             if($request->ano){
                 $docData['ano'] = $request->ano;
+            } else {
+                $docData['ano'] = date('Y');
             }
             if($request->sequencial){
                 $docData['sequencial'] = $request->sequencial;
@@ -206,18 +208,16 @@ class DocumentoController extends Controller
     /**
      * Exibe um documento específico
      *
-     * @param int $id
+     * @param Documento $documento
      * @return \Illuminate\View\View
      */
-    public function show($id)
+    public function show(Documento $documento)
     {
-        $documento = Documento::with(['categoria.grupo', 'template', 'arquivos'])->findOrFail($id);
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar este documento.');
         }
 
-        $activities =  Activity::orderBy('created_at', 'DESC')->where('subject_id', $id)->get();
+        $activities =  Activity::orderBy('created_at', 'DESC')->where('subject_id', $documento->id)->get();
 
         return view('documento.show', compact('documento', 'activities'));
     }
@@ -225,23 +225,22 @@ class DocumentoController extends Controller
     /**
      * Exibe o formulário de edição de documento
      * 
-     * @param int $id
+     * @param Documento $documento
      * @return \Illuminate\View\View
      */
-    public function edit($categoria, $id)
+    public function edit(Documento $documento)
     {
-        $documento = Documento::with(['categoria.grupo', 'template', 'arquivos'])->findOrFail($id);
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar este documento.');
         }
 
         if ($documento->finalizado) {
             session()->flash('alert-warning', 'Este documento já foi finalizado e não pode ser editado.');
-            return redirect()->route('documento.show', $id);
+            return redirect()->route('documento.show', $documento);
         }
 
-        $templates = Categoria::findOrFail($categoria)->templates;
+        $categoria = $documento->categoria;
+        $templates = $documento->categoria->templates;
 
         return view('documento.create', compact('documento', 'categoria', 'templates'));
     }
@@ -250,20 +249,18 @@ class DocumentoController extends Controller
      * Atualiza os dados de um documento existente
      * 
      * @param Request $request
-     * @param int $id
+     * @param Documento $documento
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Documento $documento)
     {
-        $documento = Documento::findOrFail($id);
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para editar este documento.');
         }
 
         if ($documento->finalizado) {
             session()->flash('alert-danger', 'Este documento já foi finalizado e não pode ser editado.');
-            return redirect()->route('documento.show', $id);
+            return redirect()->route('documento.show', $documento);
         }
 
         $request->validate([
@@ -293,7 +290,7 @@ class DocumentoController extends Controller
             }
         }
 
-        $categoria = Categoria::findOrFail($documento->categoria_id);
+        $categoria = $documento->categoria;
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para mover este documento para esta categoria.');
@@ -311,7 +308,7 @@ class DocumentoController extends Controller
 
         $codigo = null;
 
-        if ($categoria->controlar_sequencial) {
+        if($categoria->settings['controlar_sequencial']){
             $ano = $documento->ano ?? date('Y');
             $sequencial = $documento->sequencial;
 
@@ -346,6 +343,8 @@ class DocumentoController extends Controller
         } else {
             if ($request->ano) {
                 $updateData['ano'] = $request->ano;
+            } else {
+                $updateData['ano'] = date('Y');
             }
             if ($request->sequencial) {
                 $updateData['sequencial'] = $request->sequencial;
@@ -383,26 +382,24 @@ class DocumentoController extends Controller
         Mail::to($email)->send(new DocumentUpdated($documento));
 
         session()->flash('alert-success', 'Documento atualizado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
-        return redirect()->route('documento.edit', ['categoria' => $documento->categoria_id, 'id' => $id]);
+        return redirect()->route('documento.edit', $documento);
     }
 
     /**
      * Finaliza um documento
      * 
-     * @param int $id
+     * @param Documento $documento
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function finalizar($id)
+    public function finalizar(Documento $documento)
     {
-        $documento = Documento::findOrFail($id);
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para finalizar este documento.');
         }
 
         if ($documento->finalizado) {
             session()->flash('alert-warning', 'Este documento já foi finalizado.');
-            return redirect()->route('documento.show', $id);
+            return redirect()->route('documento.show', $documento);
         }
 
         $documento->update([
@@ -412,26 +409,24 @@ class DocumentoController extends Controller
         ]);
 
         session()->flash('alert-success', 'Documento finalizado com sucesso!');
-        return redirect()->route('documento.show', $id);
+        return redirect()->route('documento.show', $documento);
     }
 
     /**
      * Remove permanentemente um documento
      * 
-     * @param int $id
+     * @param Documento $documento
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function destroy(Documento $documento)
     {
-        $documento = Documento::findOrFail($id);
-
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para excluir este documento.');
         }
 
         if ($documento->finalizado) {
             session()->flash('alert-danger', 'Não é possível excluir um documento finalizado.');
-            return redirect()->route('documento.show', $id);
+            return redirect()->route('documento.show', $documento);
         }
 
         foreach ($documento->arquivos as $arquivo) {
@@ -441,12 +436,12 @@ class DocumentoController extends Controller
         $documento->delete();
 
         session()->flash('alert-success', 'Documento removido com sucesso!');
-        return redirect()->route('documento.index', $categoria);
+        return redirect()->route('categoria.docs', $categoria);
     }
 
-    public function detalharAtividade($id)
+    public function detalharAtividade(Activity $activity)
     {
-        $activity = Activity::findOrFail($id);
+        // $activity = Activity::findOrFail($id);
         if(isset($activity->properties["arquivo"])){
             $arquivo = Arquivo::withTrashed()->where([
             'id' => $activity->properties['id']
@@ -463,10 +458,8 @@ class DocumentoController extends Controller
         return view('documento.atividade', compact('activity', 'old', 'new'));
     }
 
-    public function gerarPdf($id)
+    public function gerarPdf(Documento $documento)
     {
-        $documento = Documento::with('template', 'categoria', 'categoria.grupo')->findOrFail($id);
-
         $template = $documento->template;
 
         if (!$template) {
@@ -576,16 +569,15 @@ class DocumentoController extends Controller
             ->header('Content-Disposition', 'attachment; filename="'.$docName.'"');
     }
 
-    public function copy($id)
+    public function copy(Documento $documento)
     {
-        $documento = Documento::with('arquivos')->findOrFail($id);
         $categoria = $documento->categoria;
         $grupoId = $documento->grupo_id;
 
         $novoDocumento = $documento->replicate(['sequencial', 'ano', 'codigo', 'created_at', 'updated_at']);
         $novoDocumento->finalizado = false;
 
-        if ($categoria->controlar_sequencial) {
+        if($categoria->settings['controlar_sequencial']){
             $ano = date('Y');
             $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
                 ->where('grupo_id', $grupoId)
@@ -618,7 +610,7 @@ class DocumentoController extends Controller
         Mail::to($email)->send(new DocumentCreated($novoDocumento));
 
         session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));
-        return redirect()->route('documento.edit', ['categoria' => $novoDocumento->categoria_id, 'id' => $novoDocumento->id]);
+        return redirect()->route('documento.edit', ['documento' => $novoDocumento]);
     }
 
 }
