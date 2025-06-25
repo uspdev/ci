@@ -89,7 +89,7 @@ class TemplateController extends Controller
         return view('template.create', compact('template', 'categorias'));
     }
 
-    public function update(Request $request, $template)
+    public function update(Request $request, Template $template)
     {
         if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para editar este template.');

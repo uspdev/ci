@@ -5,7 +5,7 @@
 @section('content')
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h4 class="mb-0">Documento: {{ $documento->codigo }}</h4>
+      <h4 class="mb-0"><a href="{{ route('categoria.index') }}">Categorias</a> > <a href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> > {{ $documento->codigo }}</h4>
       <div>
         <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
           @csrf
