@@ -20,10 +20,14 @@
           <input type="text" class="form-control" id="prefixo" name="prefixo"
             value="{{ old('prefixo', $categoria->prefixo) }}" required>
         </div>
-
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="text" class="form-control" id="email" name="email"
+            value="{{ old('email', $categoria->email) }}">
+        </div>
         <div class="form-check mb-3">
           <input type="checkbox" class="form-check-input" id="controlar_sequencial" name="controlar_sequencial"
-            value="1" {{ old('controlar_sequencial', $categoria->controlar_sequencial) ? 'checked' : '' }}>
+            value="1" {{ old('controlar_sequencial', $categoria->settings['controlar_sequencial']) ? 'checked' : '' }}>
           <label class="form-check-label" for="controlar_sequencial">
             Controlar Sequencial
           </label>
@@ -33,7 +37,7 @@
           <button type="submit" class="btn btn-success">
             Atualizar
           </button>
-          <a href="{{ route('categoria.index') }}" class="btn btn-secondary ml-2">
+          <a href="{{ route('categoria.admin') }}" class="btn btn-secondary ml-2">
             <i class="fas fa-arrow-left"></i> Voltar
           </a>
         </div>

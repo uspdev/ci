@@ -109,12 +109,15 @@ class CategoriaController extends Controller
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
             'prefixo' => 'required|string|max:10',
+            'email' => 'nullable|string|max:100',
+            'controlar_sequencial' => 'nullable|boolean'
         ]);
-
+        $settings['controlar_sequencial'] =  $request->controlar_sequencial ?? false;
         $categoria = Categoria::create([
             'nome' => $request->nome,
             'prefixo' => $request->prefixo,
-            'controlar_sequencial' => $request->controlar_sequencial ?? false,
+            'email' => $request->email ?? null,
+            'settings' => $settings,
             'grupo_id' => $grupoId,
         ]);
 
@@ -125,12 +128,11 @@ class CategoriaController extends Controller
     /**
      * Exibe uma categoria específica
      *
-     * @param int $id
+     * @param Categoria $categoria
      * @return \Illuminate\View\View
      */
-    public function show($id)
+    public function show(Categoria $categoria)
     {
-        $categoria = Categoria::with(['grupo', 'templates', 'documentos'])->findOrFail($id);
         if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
@@ -145,13 +147,11 @@ class CategoriaController extends Controller
     /**
      * Exibe o formulário de edição de categoria
      * 
-     * @param int $id
+     * @param Categoria $categoria
      * @return \Illuminate\View\View
      */
-    public function edit($id)
+    public function edit(Categoria $categoria)
     {
-        $categoria = Categoria::findOrFail($id);
-
         if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
@@ -167,13 +167,11 @@ class CategoriaController extends Controller
      * Atualiza os dados de uma categoria existente
      * 
      * @param Request $request
-     * @param int $id
+     * @param Categoria $categoria
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Categoria $categoria)
     {
-        $categoria = Categoria::findOrFail($id);
-
         if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }
@@ -183,30 +181,32 @@ class CategoriaController extends Controller
         }
 
         $request->validate([
-            'nome' => 'required|string|max:255|unique:categorias,nome,' . $id . ',id,grupo_id,' . $categoria->grupo_id,
+            'nome' => 'required|string|max:255|unique:categorias,nome,' . $categoria->id . ',id,grupo_id,' . $categoria->grupo_id,
             'prefixo' => 'required|string|max:10',
+            'email' => 'nullable|string|max:100',
+            'controlar_sequencial' => 'nullable|boolean'
         ]);
 
+        $settings['controlar_sequencial'] =  $request->controlar_sequencial ?? false;
         $categoria->update([
             'nome' => $request->nome,
             'prefixo' => $request->prefixo,
-            'controlar_sequencial' => $request->controlar_sequencial ?? false
+            'email' => $request->email ?? null,
+            'settings' => $settings
         ]);
 
         session()->flash('alert-success', 'Categoria atualizada com sucesso!');
-        return redirect()->route('categoria.index');
+        return redirect()->route('categoria.admin');
     }
 
     /**
      * Remove permanentemente uma categoria
      * 
-     * @param int $id
+     * @param Categoria $categoria
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function destroy(Categoria $categoria)
     {
-        $categoria = Categoria::findOrFail($id);
-
         if ($categoria->grupo_id != session('grupo_id')) {
             abort(404);
         }

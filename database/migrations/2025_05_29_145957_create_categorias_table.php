@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->string('prefixo');
-            $table->boolean('controlar_sequencial');
+            $table->string('email')->nullable();
+            $table->json('settings');
             $table->unsignedBigInteger('grupo_id');
             $table->timestamps();
             $table->foreign('grupo_id')->references('id')->on('grupos')->onDelete('cascade');

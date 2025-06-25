@@ -15,8 +15,13 @@ class Categoria extends Model
     protected $fillable = [
         'nome',
         'prefixo',
-        'controlar_sequencial',
+        'email',
+        'settings',
         'grupo_id',
+    ];
+
+    protected $casts = [
+        'settings' => 'array',
     ];
 
     public function grupo(): BelongsTo

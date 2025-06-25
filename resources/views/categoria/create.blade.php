@@ -17,6 +17,10 @@
           <label for="prefixo" class="form-label">Prefixo</label>
           <input type="text" class="form-control" id="prefixo" name="prefixo" value="{{ old('prefixo') }}" required>
         </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="text" class="form-control" id="email" name="email" value="{{ old('email') }}">
+        </div>
         <div class="form-check mb-3">
           <input type="checkbox" class="form-check-input" id="controlar_sequencial" name="controlar_sequencial"
             value="1" {{ old('controlar_sequencial') ? 'checked' : '' }}>
