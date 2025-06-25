@@ -198,8 +198,8 @@ class DocumentoController extends Controller
             }
         }
         
-        $email = \Uspdev\Replicado\Pessoa::email(Auth::user()->codpes);
-        Mail::to($email)->send(new DocumentCreated($documento));
+        if(isset($categoria->email))
+            Mail::to($categoria->email)->send(new DocumentCreated($documento));
 
         session()->flash('alert-success', 'Documento criado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
         return redirect()->route('documento.show', $documento);
@@ -291,6 +291,7 @@ class DocumentoController extends Controller
         }
 
         $categoria = $documento->categoria;
+        $original = $documento;
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para mover este documento para esta categoria.');
@@ -378,8 +379,8 @@ class DocumentoController extends Controller
 
         $documento->update($updateData);
         
-        $email = \Uspdev\Replicado\Pessoa::email(Auth::user()->codpes);
-        Mail::to($email)->send(new DocumentUpdated($documento));
+        if(isset($categoria->email))
+            Mail::to($categoria->email)->send(new DocumentUpdated($original, $documento));
 
         session()->flash('alert-success', 'Documento atualizado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
         return redirect()->route('documento.edit', $documento);
@@ -606,8 +607,8 @@ class DocumentoController extends Controller
             $novoArquivo->save();
         }
 
-        $email = \Uspdev\Replicado\Pessoa::email(Auth::user()->codpes);
-        Mail::to($email)->send(new DocumentCreated($novoDocumento));
+        if(isset($categoria->email))
+            Mail::to($categoria->email)->send(new DocumentCreated($novoDocumento));
 
         session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));
         return redirect()->route('documento.edit', ['documento' => $novoDocumento]);

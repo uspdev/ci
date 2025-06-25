@@ -1,12 +1,12 @@
 @component('mail::message')
 # Documento criado
 
-Um novo documento foi criado por você no sistema.
+Um novo documento foi **criado** na categoria {{ $documento->categoria->nome }}.
 
 **Dados do documento:**
 
 - **Código:** {{ $documento->codigo ?? '-' }}
-- **Categoria:** {{ $documento->categoria->nome ?? '-'}}
+- **Autor:** {{ \App\Models\User::find($documento->user_id)->name ?? '-'}}
 - **Grupo:** {{ $documento->categoria->grupo->name ?? '-' }}
 - **Data:** {{ $documento->data_documento ?? '-' }}
 - **Destinatário:** {{ $documento->destinatario ?? '-' }}

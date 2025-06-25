@@ -12,12 +12,14 @@ use Illuminate\Queue\SerializesModels;
 class DocumentUpdated extends Mailable
 {
     use Queueable, SerializesModels;
+    public $original;
     public $documento;
     /**
      * Create a new message instance.
      */
-     public function __construct($documento)
+     public function __construct($original, $documento)
     {
+        $this->original = $original;
         $this->documento = $documento;
     }
 
