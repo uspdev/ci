@@ -30,14 +30,14 @@
               <div class="mb-3">
                 <label for="ano" class="form-label">Ano</label>
                 <input type="number" class="form-control" id="ano" name="ano"
-                  value="{{ old('ano', $documento->ano ?? '') }}">
+                  value="{{ old('ano', $documento->ano ?? '') }}" required>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="sequencial" class="form-label">Sequencial</label>
                 <input type="number" class="form-control" id="sequencial" name="sequencial"
-                  value="{{ old('sequencial', $documento->sequencial ?? '') }}">
+                  value="{{ old('sequencial', $documento->sequencial ?? '') }}" required>
               </div>
             </div>
           </div>
@@ -48,11 +48,13 @@
               $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
           }
         @endphp
-        <div class="mb-3">
-          <label for="prefixo" class="form-label">Prefixo</label>
-          <input type="text" class="form-control" id="prefixo" name="prefixo"
-            value="{{ old('prefixo', $prefixo ?? '') }}" required>
-        </div>
+        @if ($categoria->settings['controlar_sequencial'] == 1)
+          <div class="mb-3">
+            <label for="prefixo" class="form-label">Prefixo</label>
+            <input type="text" class="form-control" id="prefixo" name="prefixo"
+              value="{{ old('prefixo', $prefixo ?? '') }}" required>
+          </div>
+        @endif
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
