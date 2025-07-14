@@ -594,7 +594,7 @@ class DocumentoController extends Controller
             $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
             $novoDocumento->codigo = $this->gerarCodigo($prefixo, $sequencial, $ano);
         } else {
-            $novoDocumento->ano = null;
+            $novoDocumento->ano = date('Y');
             $novoDocumento->sequencial = null;
             $novoDocumento->codigo = null;
         }
