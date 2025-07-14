@@ -5,24 +5,11 @@
 @section('content')
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h4 class="mb-0"><a href="{{ route('categoria.index') }}">Categorias</a> > <a href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> > {{ $documento->codigo }}</h4>
+      <h4 class="mb-0">
+      <a href="{{ route('categoria.index') }}">Categorias</a> > <a href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> > {{ $documento->codigo }}</h4>
       <div>
-        <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
-          @csrf
-          <button type="submit" class="btn btn-outline-success ml-2">
-            <i class="fas fa-copy"></i>
-          </button>
-        </form>
-        @if (isset($documento->template))
-          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-outline-secondary" target="_blank">
-            <i class="fas fa-file-pdf"></i>
-          </a>
-        @endif
         @unless ($documento->finalizado)
-          <a href="{{ route('documento.edit', $documento) }}"
-            class="btn btn-outline-primary">
-            <i class="fas fa-edit"></i>
-          </a>
+          
           <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
             @csrf
             @method('PATCH')
@@ -33,9 +20,25 @@
               <i class="fas fa-check"></i> Finalizar
             </button>
           </form>
+          <a href="{{ route('documento.edit', $documento) }}"
+            class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i>
+          </a>
         @else
           <span class="badge bg-success fs-6 text-white">Documento Finalizado</span>
         @endunless
+        <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
+          @csrf
+          <button type="submit" class="btn btn-outline-success">
+            <i class="fas fa-copy"></i>
+          </button>
+        </form>
+        @if (isset($documento->template))
+          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-outline-secondary" target="_blank">
+            <i class="fas fa-file-pdf"></i>
+          </a>
+        @endif
+        
         <a href="{{ route('categoria.docs', ['categoria' => $documento->categoria]) }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
         </a>
