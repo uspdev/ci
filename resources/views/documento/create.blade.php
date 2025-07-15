@@ -22,7 +22,7 @@
           <div class="mb-3">
             <label for="codigo" class="form-label">Código</label>
             <input type="text" class="form-control" id="codigo" name="codigo"
-              value="{{ old('codigo', $documento->codigo ?? '') }}">
+              value="{{ old('codigo', $documento->codigo ?? '') }}" required>
           </div>
 
           <div class="row">

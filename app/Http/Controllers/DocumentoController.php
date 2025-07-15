@@ -579,26 +579,20 @@ class DocumentoController extends Controller
         $novoDocumento = $documento->replicate(['sequencial', 'ano', 'codigo', 'created_at', 'updated_at']);
         $novoDocumento->finalizado = false;
 
-        if($categoria->settings['controlar_sequencial']){
-            $ano = date('Y');
-            $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
-                ->where('grupo_id', $grupoId)
-                ->where('ano', $ano)
-                ->orderByDesc('id')
-                ->first();
+        $ano = date('Y');
+        $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
+            ->where('grupo_id', $grupoId)
+            ->where('ano', $ano)
+            ->orderByDesc('sequencial')
+            ->first();
 
-            $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
+        $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
 
-            $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
-            $novoDocumento->ano = $ano;
-            $novoDocumento->sequencial = $sequencial;
-            $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
-            $novoDocumento->codigo = $this->gerarCodigo($prefixo, $sequencial, $ano);
-        } else {
-            $novoDocumento->ano = date('Y');
-            $novoDocumento->sequencial = null;
-            $novoDocumento->codigo = null;
-        }
+        $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
+        $novoDocumento->ano = $ano;
+        $novoDocumento->sequencial = $sequencial;
+        $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
+        $novoDocumento->codigo = $this->gerarCodigo($prefixo, $sequencial, $ano);
 
         $novoDocumento->save();
 

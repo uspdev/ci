@@ -31,7 +31,7 @@
 
         <div class="mb-3">
           <label for="variaveis" class="form-label">Variáveis (JSON)</label>
-          <textarea class="form-control" id="variaveis" name="variaveis" rows="2">{{ old('variaveis', isset($template) && is_array($template->variaveis) ? json_encode($template->variaveis) : '') }}</textarea>
+          <textarea class="form-control autoexpand" id="variaveis" name="variaveis" rows="2">{{ old('variaveis', isset($template) && is_array($template->variaveis) ? json_encode($template->variaveis, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '') }}</textarea>
           <small class="text-muted">Exemplo: {"nome":"string","data":"date"}</small>
         </div>
 
@@ -60,3 +60,41 @@
     </div>
   </div>
 @endsection
+
+<style>
+  .autoexpand {
+    field-sizing: content;
+    min-height: 100px
+  }
+</style>
+{{--
+Bloco para autoexpandir textarea conforme necessidade.
+
+Uso:
+- Incluir no layouts.app ou em outro lugar: @include('laravel-usp-theme::blocos.textarea-autoexpand')
+- Adiconar a classe 'autoexpand'
+
+@author Masakik, em 8/5/2024
+--}}
+
+@once
+  @section('javascripts_bottom')
+    @parent
+    <script>
+      $(document).ready(function() {
+        // valida fields antes de submeter o formulário
+        $('#form-definition-form').on('submit', function(e) {
+          const jsonText = $('#fields').val()
+
+          try {
+            JSON.parse(jsonText)
+          } catch (error) {
+            e.preventDefault();
+            alert('O JSON precisa ser válido!')
+          }
+        })
+
+      })
+    </script>
+  @endsection
+@endonce

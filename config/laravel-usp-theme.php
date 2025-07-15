@@ -2,10 +2,6 @@
 
 $menu = [
     [
-        'text' => '<i class="fas fa-home"></i> Home',
-        'url' => './',
-    ],
-    [
         'text' => 'Categorias',
         'url' => 'categorias',
         'can' => 'user'
