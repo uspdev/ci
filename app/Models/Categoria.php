@@ -14,7 +14,6 @@ class Categoria extends Model
 
     protected $fillable = [
         'nome',
-        'prefixo',
         'email',
         'settings',
         'grupo_id',

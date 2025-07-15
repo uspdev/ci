@@ -475,8 +475,9 @@ class DocumentoController extends Controller
             'assunto'       => $documento->assunto,
             'mensagem'      => $documento->mensagem,
         ];
-
-        $docName = $documento->categoria->grupo->name . '_' . $documento->categoria->prefixo . '_';
+        
+        $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
+        $docName = $documento->categoria->grupo->name . '_' . $prefixo . '_';
         $codigo = '';
         if (preg_match('/Nº (\d+)\//', $documento->codigo, $matches)) {
             $codigo = $matches[1];

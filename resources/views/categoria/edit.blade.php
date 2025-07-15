@@ -16,11 +16,6 @@
             value="{{ old('nome', $categoria->nome) }}" required>
         </div>
         <div class="mb-3">
-          <label for="prefixo" class="form-label">Prefixo</label>
-          <input type="text" class="form-control" id="prefixo" name="prefixo"
-            value="{{ old('prefixo', $categoria->prefixo) }}" required>
-        </div>
-        <div class="mb-3">
           <label for="email" class="form-label">Email</label>
           <input type="text" class="form-control" id="email" name="email"
             value="{{ old('email', $categoria->email) }}">

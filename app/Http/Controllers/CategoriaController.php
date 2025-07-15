@@ -108,14 +108,12 @@ class CategoriaController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
-            'prefixo' => 'required|string|max:10',
             'email' => 'nullable|string|max:100',
             'controlar_sequencial' => 'nullable|boolean'
         ]);
         $settings['controlar_sequencial'] =  $request->controlar_sequencial ?? false;
         $categoria = Categoria::create([
             'nome' => $request->nome,
-            'prefixo' => $request->prefixo,
             'email' => $request->email ?? null,
             'settings' => $settings,
             'grupo_id' => $grupoId,
@@ -182,7 +180,6 @@ class CategoriaController extends Controller
 
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,' . $categoria->id . ',id,grupo_id,' . $categoria->grupo_id,
-            'prefixo' => 'required|string|max:10',
             'email' => 'nullable|string|max:100',
             'controlar_sequencial' => 'nullable|boolean'
         ]);
@@ -190,7 +187,6 @@ class CategoriaController extends Controller
         $settings['controlar_sequencial'] =  $request->controlar_sequencial ?? false;
         $categoria->update([
             'nome' => $request->nome,
-            'prefixo' => $request->prefixo,
             'email' => $request->email ?? null,
             'settings' => $settings
         ]);

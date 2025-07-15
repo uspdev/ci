@@ -79,15 +79,11 @@ class GrupoController extends Controller
 
     private function criarCategoriasPadrao(Grupo $grupo)
     {
-        $categoriasPadrao = [
-            'Memorando' => 'MEM',
-            'Ofício' => 'OFC'
-        ];
+        $categoriasPadrao = ['Memorando', 'Ofício'];
         $settings['controlar_sequencial'] = true;
-        foreach ($categoriasPadrao as $nomeCategoria => $prefixo) {
+        foreach ($categoriasPadrao as $nomeCategoria) {
             Categoria::create([
                 'nome' => $nomeCategoria,
-                'prefixo' => $prefixo,
                 'settings' => $settings,
                 'grupo_id' => $grupo->id
             ]);
