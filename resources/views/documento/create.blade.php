@@ -143,12 +143,16 @@
                 </div>
                 <div>
                   <span class="badge bg-secondary text-white">{{ $arquivo->tipo_arquivo }}</span>
+                  <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-download"></i>
+                  </a>
                   <form action="{{ route('arquivo.destroy', $arquivo) }}" method="POST" style="display:inline;"
                     onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger ms-2">
-                      <i class="fas fa-trash"></i> Excluir
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2">
+                      <i class="fas fa-trash"></i>
                     </button>
                   </form>
                 </div>

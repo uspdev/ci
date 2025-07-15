@@ -8,26 +8,7 @@
       <h4 class="mb-0">
       <a href="{{ route('categoria.index') }}">Categorias</a> > <a href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> > {{ $documento->codigo }}</h4>
       <div>
-        @unless ($documento->finalizado)
-          
-          <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
-            @csrf
-            @method('PATCH')
-            <button type="submit" class="btn btn-warning" 
-              title="Ao finalizar, este documento será marcado como concluído e não poderá mais ser editado. 
-              Certifique-se de que todas as informações estão corretas antes de prosseguir."
-              onclick="return confirm('Tem certeza que deseja finalizar este documento?')">
-              <i class="fas fa-check"></i> Finalizar
-            </button>
-          </form>
-          <a href="{{ route('documento.edit', $documento) }}"
-            class="btn btn-outline-primary">
-            <i class="fas fa-edit"></i>
-          </a>
-        @else
-          <span class="badge bg-success fs-6 text-white">Documento Finalizado</span>
-        @endunless
-        <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
+      <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
           @csrf
           <button type="submit" class="btn btn-outline-success">
             <i class="fas fa-copy"></i>
@@ -38,6 +19,26 @@
             <i class="fas fa-file-pdf"></i>
           </a>
         @endif
+        @unless ($documento->finalizado)
+          <a href="{{ route('documento.edit', $documento) }}"
+            class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i>
+          </a>
+          <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
+            @csrf
+            @method('PATCH')
+            <button type="submit" class="btn btn-warning" 
+              title="Ao finalizar, este documento será marcado como concluído e não poderá mais ser editado. 
+              Certifique-se de que todas as informações estão corretas antes de prosseguir."
+              onclick="return confirm('Tem certeza que deseja finalizar este documento?')">
+              <i class="fas fa-lock"></i> Finalizar
+            </button>
+          </form>
+          
+        @else
+          <button type="button" class="btn btn-success fs-6 text-white" disabled>Documento Finalizado</button>
+        @endunless
+        
         
         <a href="{{ route('categoria.docs', ['categoria' => $documento->categoria]) }}" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Voltar
