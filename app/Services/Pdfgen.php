@@ -103,7 +103,7 @@ class Pdfgen
         return $this->html; //dados
     }
 
-    public function parseBasicHtml($html, $pdf)
+    public function parseBasicHtml($html, $pdf, $maxWidth = null)
     {
         $html = str_replace(["\r", "\n"], '', $html);
 
@@ -111,9 +111,17 @@ class Pdfgen
         $bold = false;
         $italic = false;
 
+        $currentX = $pdf->GetX();
+        $currentY = $pdf->GetY();
+        $pageWidth = $pdf->GetPageWidth();
+        $leftMargin = $currentX;
+        $rightMargin = $currentY;
+        $usableWidth = $maxWidth ?? ($pageWidth - $leftMargin - $rightMargin);
+
         $parts = preg_split('/(<[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
         foreach ($parts as $part) {
-            switch (strtolower($part)) {
+            switch ($part) {
                 case '<ul>':
                     $inList = true;
                     break;
@@ -122,12 +130,13 @@ class Pdfgen
                     break;
                 case '<li>':
                     if ($inList) {
-                        $pdf->Ln(6);
-                        $pdf->Cell(5, 6, '◦', 2, 0);
+                        $pdf->Ln(5);
+                        $pdf->SetX($currentX + 4);
+                        $pdf->Cell(5, 6, '•', 0, 0);
                     }
                     break;
                 case '</li>':
-                    $pdf->Ln(5);
+                    $pdf->Ln(3);
                     break;
                 case '<br>':
                 case '<br/>':
@@ -145,15 +154,21 @@ class Pdfgen
                     $pdf->SetFont('', ($italic ? 'I' : ''));
                     break;
                 case '<i>':
+                case '<em>':
                     $italic = true;
                     $pdf->SetFont('', ($bold ? 'BI' : 'I'));
                     break;
                 case '</i>':
+                case '</em>':
                     $italic = false;
                     $pdf->SetFont('', ($bold ? 'B' : ''));
                     break;
                 default:
-                    $pdf->Cell(0, 6, strip_tags($part), 0, 2, 'L');
+                    $text = strip_tags($part);
+                    if (!empty(trim($text))) {
+                        $pdf->MultiCell($usableWidth, 7, $text, 0, 'L');
+                        $pdf->SetX($currentX);
+                    }
             }
         }
     }
@@ -167,6 +182,7 @@ class Pdfgen
             $pdf->AddFont('DejaVu','B','DejaVuSans-Bold.ttf',true);
             $pdf->AddFont('DejaVu','I','DejaVuSans-Oblique.ttf',true);
             $pdf->AddFont('DejaVu','BI','DejaVuSans-BoldOblique.ttf',true);
+            $pdf->SetMargins(20, 20, 20);
             $pageCount = $pdf->setSourceFile($this->template);
             for ($pagenum = 1; $pagenum <= $pageCount; $pagenum++) {
                 $tpl = $pdf->importPage($pagenum);
@@ -188,7 +204,7 @@ class Pdfgen
                         $valor = $this->data[$campo];
 
                         if ($valor != strip_tags($valor)) {
-                            $this->parseBasicHtml($valor, $pdf);
+                            $this->parseBasicHtml($valor, $pdf, 184);
                         } else {
                             $pdf->Cell(0, 10, $valor, 0, 1, 'L');
                         }
