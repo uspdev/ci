@@ -164,11 +164,30 @@ class Pdfgen
                     $pdf->SetFont('', ($bold ? 'B' : ''));
                     break;
                 default:
-                    $text = strip_tags($part);
-                    if (!empty(trim($text))) {
-                        $pdf->MultiCell($usableWidth, 7, $text, 0, 'L');
-                        $pdf->SetX($currentX);
+                    $text = trim(strip_tags($part));
+                if ($text !== '') {
+                    $lineHeight = 7;
+                    $stringWidth = $pdf->GetStringWidth($text);
+                    $lines = ceil($stringWidth / $usableWidth);
+                    $neededHeight = $lines * $lineHeight;
+                    $pageHeight = $pdf->GetPageHeight();
+                    $topMargin = 20;
+                    $bottomMargin = 20;
+
+
+                    $spaceLeft = $pageHeight - $pdf->GetY() - $bottomMargin;
+
+                    if ($neededHeight > $spaceLeft) {
+                        $pdf->AddPage();
+                        $pdf->useTemplate($pdf->tplId);
+                        
+                        $pdf->SetXY($leftMargin, $topMargin);
+                        $currentX = $leftMargin;
                     }
+
+                    $pdf->MultiCell($usableWidth, $lineHeight, $text, 0, 'L');
+                    $pdf->SetX($currentX);
+                }
             }
         }
     }
@@ -188,6 +207,7 @@ class Pdfgen
                 $tpl = $pdf->importPage($pagenum);
                 $pdf->AddPage($cfg['orientation'], $cfg['paper']);
                 $pdf->useTemplate($tpl);
+                $pdf->tplId = $tpl;
 
                 if (!empty($this->data['imgs'])) {
                     foreach ($this->data['imgs'] as $img) {
