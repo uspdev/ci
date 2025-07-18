@@ -103,7 +103,7 @@ class Pdfgen
         return $this->html; //dados
     }
 
-    public function parseBasicHtml($html, $pdf, $maxWidth = null)
+    public function parseBasicHtml($html, $pdf, $maxWidth = null, $leftMargin = 20, $topMargin = 20, $rightMargin = 20)
     {
         $html = str_replace(["\r", "\n"], '', $html);
 
@@ -111,83 +111,97 @@ class Pdfgen
         $bold = false;
         $italic = false;
 
-        $currentX = $pdf->GetX();
-        $currentY = $pdf->GetY();
+        $headerStyles = [
+            'h1' => ['size' => 18, 'style' => 'B', 'space' => 6],
+            'h2' => ['size' => 16, 'style' => 'B', 'space' => 6],
+            'h3' => ['size' => 14, 'style' => 'B', 'space' => 5],
+            'h4' => ['size' => 12, 'style' => 'B', 'space' => 4],
+            'h5' => ['size' => 11, 'style' => 'B', 'space' => 3],
+            'h6' => ['size' => 10, 'style' => '',  'space' => 2],
+        ];
+
         $pageWidth = $pdf->GetPageWidth();
-        $leftMargin = $currentX;
-        $rightMargin = $currentY;
         $usableWidth = $maxWidth ?? ($pageWidth - $leftMargin - $rightMargin);
+
+        $lineHeight = 7;
 
         $parts = preg_split('/(<[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
         foreach ($parts as $part) {
-            switch ($part) {
+            $tag = strtolower($part);
+
+            if (preg_match('/^<h[1-6]>$/', $tag)) {
+                $level = substr($tag, 2, 1);
+                $styles = $headerStyles["h$level"];
+                $pdf->Ln($styles['space']);
+                $pdf->SetFont('', $styles['style'], $styles['size']);
+                continue;
+            }
+
+            if (preg_match('/^<\/h[1-6]>$/', $tag)) {
+                $pdf->Ln(4);
+                $pdf->SetFont('', ($bold && $italic ? 'BI' : ($bold ? 'B' : ($italic ? 'I' : ''))));
+                $pdf->SetFontSize(12);
+                continue;
+            }
+
+            switch ($tag) {
                 case '<ul>':
                     $inList = true;
                     break;
+
                 case '</ul>':
                     $inList = false;
                     break;
+
                 case '<li>':
                     if ($inList) {
                         $pdf->Ln(5);
-                        $pdf->SetX($currentX + 4);
-                        $pdf->Cell(5, 6, '•', 0, 0);
+                        $pdf->SetX($leftMargin + 4);
+                        $pdf->Cell(5, $lineHeight, '•', 0, 0);
                     }
                     break;
+
                 case '</li>':
                     $pdf->Ln(3);
                     break;
+
                 case '<br>':
                 case '<br/>':
                 case '<br />':
                     $pdf->Ln(5);
                     break;
+
                 case '<b>':
                 case '<strong>':
                     $bold = true;
-                    $pdf->SetFont('', ($italic ? 'BI' : 'B'));
+                    $pdf->SetFont('', $italic ? 'BI' : 'B');
                     break;
+
                 case '</b>':
                 case '</strong>':
                     $bold = false;
-                    $pdf->SetFont('', ($italic ? 'I' : ''));
+                    $pdf->SetFont('', $italic ? 'I' : '');
                     break;
+
                 case '<i>':
                 case '<em>':
                     $italic = true;
-                    $pdf->SetFont('', ($bold ? 'BI' : 'I'));
+                    $pdf->SetFont('', $bold ? 'BI' : 'I');
                     break;
+
                 case '</i>':
                 case '</em>':
                     $italic = false;
-                    $pdf->SetFont('', ($bold ? 'B' : ''));
+                    $pdf->SetFont('', $bold ? 'B' : '');
                     break;
+
                 default:
                     $text = trim(strip_tags($part));
-                if ($text !== '') {
-                    $lineHeight = 7;
-                    $stringWidth = $pdf->GetStringWidth($text);
-                    $lines = ceil($stringWidth / $usableWidth);
-                    $neededHeight = $lines * $lineHeight;
-                    $pageHeight = $pdf->GetPageHeight();
-                    $topMargin = 20;
-                    $bottomMargin = 20;
-
-
-                    $spaceLeft = $pageHeight - $pdf->GetY() - $bottomMargin;
-
-                    if ($neededHeight > $spaceLeft) {
-                        $pdf->AddPage();
-                        $pdf->useTemplate($pdf->tplId);
-                        
-                        $pdf->SetXY($leftMargin, $topMargin);
-                        $currentX = $leftMargin;
+                    if ($text !== '') {
+                        $pdf->MultiCell($usableWidth, $lineHeight, $text, 0, 'L');
                     }
-
-                    $pdf->MultiCell($usableWidth, $lineHeight, $text, 0, 'L');
-                    $pdf->SetX($currentX);
-                }
+                    break;
             }
         }
     }
