@@ -578,6 +578,8 @@ class DocumentoController extends Controller
 
         $novoDocumento = $documento->replicate(['sequencial', 'ano', 'codigo', 'created_at', 'updated_at']);
         $novoDocumento->finalizado = false;
+        $novoDocumento->data_finalizacao = null;
+        $novoDocumento->finalizer_user_id = null;
 
         $ano = date('Y');
         $ultimoDocumento = Documento::where('categoria_id', $categoria->id)
@@ -595,12 +597,6 @@ class DocumentoController extends Controller
         $novoDocumento->codigo = $this->gerarCodigo($prefixo, $sequencial, $ano);
 
         $novoDocumento->save();
-
-        foreach ($documento->arquivos as $arquivo) {
-            $novoArquivo = $arquivo->replicate(['id', 'created_at', 'updated_at']);
-            $novoArquivo->documento_id = $novoDocumento->id;
-            $novoArquivo->save();
-        }
 
         if(isset($categoria->email))
             Mail::to($categoria->email)->send(new DocumentCreated($novoDocumento));
