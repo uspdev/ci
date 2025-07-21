@@ -31,12 +31,12 @@
               title="Ao finalizar, este documento será marcado como concluído e não poderá mais ser editado. 
               Certifique-se de que todas as informações estão corretas antes de prosseguir."
               onclick="return confirm('Tem certeza que deseja finalizar este documento?')">
-              <i class="fas fa-lock"></i> Finalizar
+              <i class="fas fa-lock-open"></i> Finalizar
             </button>
           </form>
           
         @else
-          <button type="button" class="btn btn-success fs-6 text-white" disabled>Documento Finalizado</button>
+          <button type="button" class="btn btn btn-warning fs-6" disabled><i class="fas fa-lock"></i> Finalizado</button>
         @endunless
         
         
@@ -82,7 +82,7 @@
         <div class="mb-4">
           <h5>Arquivos</h5>
           <div class="list-group">
-            @foreach ($documento->arquivos as $arquivo)
+            @foreach ($documento->arquivos->sortByDesc('created_at') as $arquivo)
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                   <strong>{{ $arquivo->nome_original }}</strong>

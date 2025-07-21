@@ -135,7 +135,7 @@
         <div class="mt-3">
           <h5>Arquivos Existentes</h5>
           <div class="list-group">
-            @foreach ($documento->arquivos as $arquivo)
+            @foreach ($documento->arquivos->sortByDesc('created_at') as $arquivo)
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                   <strong>{{ $arquivo->nome_original }}</strong>

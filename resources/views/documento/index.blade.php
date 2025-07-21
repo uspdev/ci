@@ -4,7 +4,8 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center">
-        <h4 class="mb-0"><a href="{{ route('categoria.index') }}">Categorias</a> > {{ \App\Models\Categoria::find($categoria)->nome }}</h4>
+        <h4 class="mb-0"><a href="{{ route('categoria.index') }}">Categorias</a> >
+          {{ \App\Models\Categoria::find($categoria)->nome }}</h4>
         <div class="dropdown ml-2 mt-1">
           <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="novoDocumentoDropdown"
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -57,18 +58,11 @@
                     </button>
                   </form>
                   @unless ($documento->finalizado)
-                    <a href="{{ route('documento.edit', $documento) }}"
-                      class="btn btn-outline-primary btn-sm mr-2 d-flex">
+                    <a href="{{ route('documento.edit', $documento) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
                       <i class="fas fa-edit"></i>
                     </a>
-                    {{-- <form action="{{ route('documento.destroy', $documento) }}" method="POST" class="d-inline">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn btn-outline-danger btn-sm d-flex"
-                        onclick="return confirm('Tem certeza?')">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form> --}}
+                  @else
+                    <button type="button" class="btn btn btn-warning btn-sm mr-2 d-flex" disabled><i class="fas fa-lock"></i></button>
                   @endunless
                 </div>
               </td>
