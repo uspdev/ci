@@ -33,7 +33,7 @@ class DocumentoController extends Controller
     /**
      * Exibe a lista de documentos do grupo ativo
      */
-    public function index($categoria, $ano = null)
+    public function index(Categoria $categoria, $ano = null)
     {
         $this->authorize('grupoManager');
         \UspTheme::activeUrl('documentos');
@@ -52,7 +52,7 @@ class DocumentoController extends Controller
         }
 
         $query = Documento::where('grupo_id', $grupoId)
-            ->where('categoria_id', $categoria)
+            ->where('categoria_id', $categoria->id)
             ->where('ano', $ano)
             ->with(['categoria', 'template']);
 
