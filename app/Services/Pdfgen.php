@@ -2,6 +2,8 @@
 namespace App\Services;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpWord\TemplateProcessor;
+use PhpOffice\PhpWord\Element\TextRun;
 
 class Pdfgen
 {
@@ -75,7 +77,7 @@ class Pdfgen
 
     public function parse()
     {
-        if($this->isPdfTemplate()){
+        if($this->isDocxTemplate()){
             $this->html = null;
             return null;
         }
@@ -103,166 +105,100 @@ class Pdfgen
         return $this->html; //dados
     }
 
-    public function parseBasicHtml($html, $pdf, $maxWidth = null, $leftMargin = 20, $topMargin = 20, $rightMargin = 20)
+    protected function parseHtmlToTextRun(string $html)
     {
-        $html = str_replace(["\r", "\n"], '', $html);
+        $textRun = new TextRun();
 
-        $inList = false;
-        $bold = false;
-        $italic = false;
+        $html = preg_replace('#<\s*br\s*/?>#i', "\n", $html);
+        $html = preg_replace('#<\s*/?p\s*>#i', "\n", $html);
 
-        $headerStyles = [
-            'h1' => ['size' => 18, 'style' => 'B', 'space' => 6],
-            'h2' => ['size' => 16, 'style' => 'B', 'space' => 6],
-            'h3' => ['size' => 14, 'style' => 'B', 'space' => 5],
-            'h4' => ['size' => 12, 'style' => 'B', 'space' => 4],
-            'h5' => ['size' => 11, 'style' => 'B', 'space' => 3],
-            'h6' => ['size' => 10, 'style' => '',  'space' => 2],
-        ];
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>'.$html);
+        libxml_clear_errors();
 
-        $pageWidth = $pdf->GetPageWidth();
-        $usableWidth = $maxWidth ?? ($pageWidth - $leftMargin - $rightMargin);
+        $body = $dom->getElementsByTagName('body')->item(0);
+        $this->parseNodeChildren($body, $textRun);
 
-        $lineHeight = 7;
+        return $textRun;
+    }
 
-        $parts = preg_split('/(<[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+    protected function parseNodeChildren(\DOMNode $node, TextRun $textRun, array $styleStack = [])
+    {
+        foreach ($node->childNodes as $child) {
+            $currentStyle = $styleStack;
 
-        foreach ($parts as $part) {
-            $tag = strtolower($part);
+            if ($child instanceof \DOMElement) {
+                $tag = strtolower($child->tagName);
+                if ($tag === 'b' || $tag === 'strong') {
+                    $currentStyle['bold'] = true;
+                }
+                if ($tag === 'i' || $tag === 'em') {
+                    $currentStyle['italic'] = true;
+                }
+                if ($tag === 'u') {
+                    $currentStyle['underline'] = 'single';
+                }
 
-            if (preg_match('/^<h[1-6]>$/', $tag)) {
-                $level = substr($tag, 2, 1);
-                $styles = $headerStyles["h$level"];
-                $pdf->Ln($styles['space']);
-                $pdf->SetFont('', $styles['style'], $styles['size']);
-                continue;
+                $this->parseNodeChildren($child, $textRun, $currentStyle);
             }
 
-            if (preg_match('/^<\/h[1-6]>$/', $tag)) {
-                $pdf->Ln(4);
-                $pdf->SetFont('', ($bold && $italic ? 'BI' : ($bold ? 'B' : ($italic ? 'I' : ''))));
-                $pdf->SetFontSize(12);
-                continue;
-            }
-
-            switch ($tag) {
-                case '<ul>':
-                    $inList = true;
-                    break;
-
-                case '</ul>':
-                    $inList = false;
-                    break;
-
-                case '<li>':
-                    if ($inList) {
-                        $pdf->Ln(5);
-                        $pdf->SetX($leftMargin + 4);
-                        $pdf->Cell(5, $lineHeight, '•', 0, 0);
+            if ($child instanceof \DOMText) {
+                $content = trim($child->wholeText);
+                if ($content !== '') {
+                    $lines = explode("\n", $content);
+                    foreach ($lines as $i => $line) {
+                        if ($i > 0) {
+                            $textRun->addTextBreak();
+                        }
+                        $textRun->addText($line, $currentStyle);
                     }
-                    break;
-
-                case '</li>':
-                    $pdf->Ln(3);
-                    break;
-
-                case '<br>':
-                case '<br/>':
-                case '<br />':
-                    $pdf->Ln(5);
-                    break;
-
-                case '<b>':
-                case '<strong>':
-                    $bold = true;
-                    $pdf->SetFont('', $italic ? 'BI' : 'B');
-                    break;
-
-                case '</b>':
-                case '</strong>':
-                    $bold = false;
-                    $pdf->SetFont('', $italic ? 'I' : '');
-                    break;
-
-                case '<i>':
-                case '<em>':
-                    $italic = true;
-                    $pdf->SetFont('', $bold ? 'BI' : 'I');
-                    break;
-
-                case '</i>':
-                case '</em>':
-                    $italic = false;
-                    $pdf->SetFont('', $bold ? 'B' : '');
-                    break;
-
-                default:
-                    $text = trim(strip_tags($part));
-                    if ($text !== '') {
-                        $pdf->MultiCell($usableWidth, $lineHeight, $text, 0, 'L');
-                    }
-                    break;
+                }
             }
         }
     }
 
+    public function docxBuild($pathToSave = null, $fieldMap = [])
+    {
+
+        if (!file_exists($this->template)) {
+            throw new \Exception("Arquivo de template DOCX não encontrado em: $this->template");
+        }
+
+        $templateProcessor = new TemplateProcessor($this->template);
+
+        foreach ($fieldMap as $campo => $info) {
+            $valor = $this->data[$campo] ?? '';
+
+            if ($valor == strip_tags($valor)) {
+                $templateProcessor->setValue($campo, $valor);
+            } else {
+                $textRun = $this->parseHtmlToTextRun($valor);
+                $templateProcessor->setComplexBlock($campo, $textRun);
+            }
+
+            $templateProcessor->setValue($campo, $valor);
+        }
+        $saveDocx = str_replace('.pdf', '.docx', $pathToSave);
+        $templateProcessor->saveAs($saveDocx);
+
+        $command = 'libreoffice --headless --convert-to pdf --outdir ' . escapeshellarg(dirname($saveDocx)) . ' ' . escapeshellarg($saveDocx);
+        exec($command, $output, $resultCode);
+
+        if ($resultCode !== 0 || !file_exists($pathToSave)) {
+            throw new \Exception("Falha ao converter o arquivo DOCX para PDF. Código: $resultCode");
+        }
+
+        if (file_exists($saveDocx)) {
+            unlink($saveDocx);
+        }
+
+    }
 
     public function pdfBuild($dest = 'I', $cfg = [], $fieldMap = null, $path)
     {
-        if($this->isPdfTemplate()) {
-            $pdf = new \setasign\Fpdi\Tfpdf\Fpdi();
-            $pdf->AddFont('DejaVu','','DejaVuSans.ttf',true);
-            $pdf->AddFont('DejaVu','B','DejaVuSans-Bold.ttf',true);
-            $pdf->AddFont('DejaVu','I','DejaVuSans-Oblique.ttf',true);
-            $pdf->AddFont('DejaVu','BI','DejaVuSans-BoldOblique.ttf',true);
-            $pdf->SetMargins(20, 20, 20);
-            $pageCount = $pdf->setSourceFile($this->template);
-            for ($pagenum = 1; $pagenum <= $pageCount; $pagenum++) {
-                $tpl = $pdf->importPage($pagenum);
-                $pdf->AddPage($cfg['orientation'], $cfg['paper']);
-                $pdf->useTemplate($tpl);
-                $pdf->tplId = $tpl;
-
-                if (!empty($this->data['imgs'])) {
-                    foreach ($this->data['imgs'] as $img) {
-                        if (($img['page'] ?? 1) == $pagenum) {
-                            $pdf->Image(public_path($img['img']), $img['x'], $img['y'], $img['w']);
-                        }
-                    }
-                }
-
-                foreach ($fieldMap as $campo => $info) {
-                    if (!empty($this->data[$campo]) && ($info['page'] ?? 1) == $pagenum) {
-                        $pdf->SetFont('DejaVu', '', $info['font']);
-                        $pdf->SetXY($info['x'], $info['y']);
-                        $valor = $this->data[$campo];
-
-                        if ($valor != strip_tags($valor)) {
-                            $this->parseBasicHtml($valor, $pdf, 184);
-                        } else {
-                            $pdf->Cell(0, 10, $valor, 0, 1, 'L');
-                        }
-                    }
-                }
-            }
-
-
-            if (!empty($this->data['imgs'])) {
-                foreach ($this->data['imgs'] as $img) {
-                    $pdf->Image(public_path($img['img']), $img['x'], $img['y'], $img['w']);
-                }
-            }
-
-            
-
-            if ($dest === 'D') {
-                return $pdf->Output('document.pdf', 'D');
-            } elseif ($dest === 'F') {
-                $pdf->Output($path, 'F');
-                return $path;
-            } else {
-                return $pdf->Output('document.pdf', 'I');
-            }
+        if($this->isDocxTemplate()) {
+            $this->docxBuild($path, $fieldMap);
         } else {
             if (empty($this->html)) {
                 $this->parse();
@@ -313,9 +249,9 @@ class Pdfgen
         return '';
     }
 
-    private function isPdfTemplate()
+    private function isDocxTemplate()
     {
-        return strtolower(pathinfo($this->template, PATHINFO_EXTENSION)) === 'pdf';
+        return strtolower(pathinfo($this->template, PATHINFO_EXTENSION)) === 'docx';
     }
 
     public function getHash($fieldMap): string

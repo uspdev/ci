@@ -102,12 +102,13 @@ class TemplateController extends Controller
             'variaveis' => 'nullable|json',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
-            'arquivo' => 'nullable|file|mimes:pdf|max:10240',
+            'arquivo' => 'nullable|file|mimes:docx|max:10240',
         ]);
 
         if ($request->hasFile('arquivo')) {
             $filePath = $request->file('arquivo')->store('templates', 'public');
         }
+
 
         $template->update([
             'nome' => $request->nome,

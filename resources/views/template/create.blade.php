@@ -50,7 +50,7 @@
 
         <div class="mb-3">
           <label for="arquivo" class="form-label">Arquivo de template</label>
-          <input type="file" class="form-control" id="arquivo" name="arquivo" accept="application/pdf"
+          <input type="file" class="form-control" id="arquivo" name="arquivo" accept="application/docx"
             value="{{ old('arquivo', $template->arquivo ?? '') }}">
         </div>
         

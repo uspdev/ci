@@ -7,11 +7,11 @@
         <h4 class="mb-0"><a href="{{ route('categoria.index') }}">Categorias</a> >
           {{ $categoria->nome }}</h4>
         <div class="dropdown ml-2 mt-1">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="novoDocumentoDropdown"
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="anoDropdown"
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{ $ano }}
           </button>
-          <div class="dropdown-menu" aria-labelledby="novoDocumentoDropdown">
+          <div class="dropdown-menu" aria-labelledby="anoDropdown">
             @foreach ($anos as $ano)
               <a class="dropdown-item" href="{{ route('categoria.docs', ['categoria' => $categoria, 'ano' => $ano]) }}">
                 {{ $ano }}
