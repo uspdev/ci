@@ -160,7 +160,6 @@ class Pdfgen
 
     public function docxBuild($pathToSave = null, $fieldMap = [])
     {
-
         if (!file_exists($this->template)) {
             throw new \Exception("Arquivo de template DOCX não encontrado em: $this->template");
         }
@@ -176,23 +175,8 @@ class Pdfgen
                 $textRun = $this->parseHtmlToTextRun($valor);
                 $templateProcessor->setComplexBlock($campo, $textRun);
             }
-
-            $templateProcessor->setValue($campo, $valor);
         }
-        $saveDocx = str_replace('.pdf', '.docx', $pathToSave);
-        $templateProcessor->saveAs($saveDocx);
-
-        $command = 'libreoffice --headless --convert-to pdf --outdir ' . escapeshellarg(dirname($saveDocx)) . ' ' . escapeshellarg($saveDocx);
-        exec($command, $output, $resultCode);
-
-        if ($resultCode !== 0 || !file_exists($pathToSave)) {
-            throw new \Exception("Falha ao converter o arquivo DOCX para PDF. Código: $resultCode");
-        }
-
-        if (file_exists($saveDocx)) {
-            unlink($saveDocx);
-        }
-
+        $templateProcessor->saveAs($pathToSave);
     }
 
     public function pdfBuild($dest = 'I', $cfg = [], $fieldMap = null, $path)
@@ -221,7 +205,6 @@ class Pdfgen
             }
         }
     }
-
 
     function sexo($sexo, $m, $f)
     {

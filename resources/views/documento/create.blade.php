@@ -2,11 +2,21 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">{{ isset($documento) ? 'Editar documento: ' . $documento->codigo : 'Novo documento' }}</h4>
       @if (!isset($documento) && $categoria->settings['controlar_sequencial'] == 1)
         <div class="mt-1">O código será gerado automaticamente</div>
       @endif
+      <div>
+      @if (isset($documento))
+        <a href="{{ route('documento.show', $documento) }}" class="btn btn-info ml-2">
+          Visualizar
+        </a>
+      @endif
+      <a href="{{ route('categoria.docs', $categoria) }}" class="btn btn-secondary ml-2">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </a>
+      </div>
     </div>
     <div class="card-body">
 
@@ -120,14 +130,7 @@
           <button type="submit" class="btn btn-success">
             {{ isset($documento) ? 'Atualizar' : 'Salvar' }}
           </button>
-          @if (isset($documento))
-            <a href="{{ route('documento.show', $documento) }}" class="btn btn-info ml-2">
-              Visualizar
-            </a>
-          @endif
-          <a href="{{ route('categoria.docs', $categoria) }}" class="btn btn-secondary ml-2">
-            <i class="fas fa-arrow-left"></i> Voltar
-          </a>
+
         </div>
       </form>
 

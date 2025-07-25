@@ -482,7 +482,7 @@ class DocumentoController extends Controller
         if (preg_match('/Nº (\d+)\//', $documento->codigo, $matches)) {
             $codigo = $matches[1];
         }
-        $docName .= $codigo . '.pdf';
+        $docName .= $codigo . '.docx';
 
         $pdfContent = null;
         $arquivoHash = '';
@@ -502,7 +502,7 @@ class DocumentoController extends Controller
             $pdfgen->parse();
 
             $arquivoHash = $pdfgen->getHash($fieldMap);
-            $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.pdf';
+            $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.docx';
             $fullPath = Storage::disk('public')->path($caminhoArquivo);
 
             $arquivoExistente = Arquivo::where('documento_id', $documento->id)
@@ -530,7 +530,7 @@ class DocumentoController extends Controller
             }
         } else {
             $conteudo = $template->conteudo_padrao;
-            
+            $docName = str_replace('.docx', '.pdf', $docName);
             foreach ($variaveis as $chave => $valor) {
                 $conteudo = str_replace('{{ '.$chave.' }}', $valor, $conteudo);
             }
