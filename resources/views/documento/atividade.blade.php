@@ -74,7 +74,7 @@
             <td>
               @if (!empty($old['mensagem']))
                 <div style="max-height: 100px; overflow-y: auto;">
-                  {!! Str::limit(strip_tags($old['mensagem']), 200) !!}
+                  {!! $old['mensagem'] !!}
                 </div>
               @else
                 -
@@ -83,7 +83,7 @@
             <td>
               @if (!empty($new['mensagem']))
                 <div style="max-height: 100px; overflow-y: auto;">
-                  {!! Str::limit(strip_tags($new['mensagem']), 200) !!}
+                  {!! $new['mensagem'] !!}
                 </div>
               @else
                 -
@@ -110,23 +110,6 @@
                 @else
                   Em andamento
                 @endif
-              @else
-                -
-              @endif
-            </td>
-          </tr>
-          <tr>
-            <td>Data Finalização</td>
-            <td>
-              @if (!empty($old['data_finalizacao']))
-                {{ \Carbon\Carbon::parse($old['data_finalizacao'])->format('d/m/Y H:i') }}
-              @else
-                -
-              @endif
-            </td>
-            <td>
-              @if (!empty($new['data_finalizacao']))
-                {{ \Carbon\Carbon::parse($new['data_finalizacao'])->format('d/m/Y H:i') }}
               @else
                 -
               @endif
@@ -212,6 +195,23 @@
             <td>
               @if (!empty($new['finalizer_user_id']))
                 {{ \App\Models\User::find($new['finalizer_user_id'])->name ?? 'Usuário não encontrado' }}
+              @else
+                -
+              @endif
+            </td>
+          </tr>
+          <tr>
+            <td>Data Finalização</td>
+            <td>
+              @if (!empty($old['data_finalizacao']))
+                {{ \Carbon\Carbon::parse($old['data_finalizacao'])->format('d/m/Y H:i') }}
+              @else
+                -
+              @endif
+            </td>
+            <td>
+              @if (!empty($new['data_finalizacao']))
+                {{ \Carbon\Carbon::parse($new['data_finalizacao'])->format('d/m/Y H:i') }}
               @else
                 -
               @endif

@@ -456,6 +456,11 @@ class DocumentoController extends Controller
 
         $old = $activity->properties['old'] ?? [];
         $new = $activity->properties['attributes'] ?? [];
+        
+        $texts = get_decorated_diff($old['mensagem'], $new['mensagem']);
+        $old['mensagem'] = $texts['old'];
+        $new['mensagem'] = $texts['new'];
+
         return view('documento.atividade', compact('activity', 'old', 'new'));
     }
 
