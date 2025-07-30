@@ -27,7 +27,7 @@ class DocumentoController extends Controller
     private function gerarCodigo(string $prefixo, int $sequencial, int $ano): string
     {
         $numero = str_pad($sequencial, 3, '0', STR_PAD_LEFT);
-        return "{$prefixo} Nº {$numero}/{$ano}";
+        return "{$prefixo}{$numero}/{$ano}";
     }
 
     /**
@@ -105,7 +105,6 @@ class DocumentoController extends Controller
         }
 
         $request->validate([
-            'prefixo' => 'string|max:255|nullable',
             'sequencial' => 'integer|nullable',
             'ano' => 'integer|nullable',
             'codigo' => 'string|max:255|nullable',
@@ -149,7 +148,7 @@ class DocumentoController extends Controller
             $ultimoSequencial = $ultimoDocumento ? $ultimoDocumento->sequencial : null;
 
             $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
-            $codigo = $this->gerarCodigo($request->prefixo, $sequencial, $ano);
+            $codigo = $this->gerarCodigo($categoria->prefixo, $sequencial, $ano);
 
             $docData['codigo'] = $codigo;
             $docData['sequencial'] = $sequencial;
@@ -171,7 +170,7 @@ class DocumentoController extends Controller
                     $codigo = $request->codigo;
                 }
             } elseif($request->ano && $request->sequencial){
-                $codigo = $this->gerarCodigo($request->prefixo, $request->sequencial, $request->ano);
+                $codigo = $this->gerarCodigo($categoria->prefixo, $request->sequencial, $request->ano);
                 $codigoExists = Documento::where('categoria_id', $categoria->id)
                     ->where('grupo_id', $grupoId)->where('codigo', $codigo)->exists();
                 if(!$codigoExists){
@@ -442,13 +441,13 @@ class DocumentoController extends Controller
 
     public function detalharAtividade(Activity $activity)
     {
-        // $activity = Activity::findOrFail($id);
         if(isset($activity->properties["arquivo"])){
             $arquivo = Arquivo::withTrashed()->where([
             'id' => $activity->properties['id']
             ])->first();
             return redirect(Storage::url($arquivo->caminho));
         }
+        
         $documento = Documento::findOrFail($activity->subject_id);
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar este documento.');
@@ -456,10 +455,12 @@ class DocumentoController extends Controller
 
         $old = $activity->properties['old'] ?? [];
         $new = $activity->properties['attributes'] ?? [];
-        
-        $texts = get_decorated_diff($old['mensagem'], $new['mensagem']);
-        $old['mensagem'] = $texts['old'];
-        $new['mensagem'] = $texts['new'];
+
+        if($old['mensagem'] !== $new['mensagem']){
+            $texts = get_decorated_diff($old['mensagem'], $new['mensagem']);
+            $old['mensagem'] = $texts['old'];
+            $new['mensagem'] = $texts['new'];
+        }
 
         return view('documento.atividade', compact('activity', 'old', 'new'));
     }

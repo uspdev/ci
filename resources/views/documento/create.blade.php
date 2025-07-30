@@ -53,18 +53,6 @@
           </div>
         @endif
 
-        @php
-          if (isset($documento)) {
-              $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
-          }
-        @endphp
-        @if ($categoria->settings['controlar_sequencial'] == 1)
-          <div class="mb-3">
-            <label for="prefixo" class="form-label">Prefixo</label>
-            <input type="text" class="form-control" id="prefixo" name="prefixo"
-              value="{{ old('prefixo', $prefixo ?? '') }}" required>
-          </div>
-        @endif
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">

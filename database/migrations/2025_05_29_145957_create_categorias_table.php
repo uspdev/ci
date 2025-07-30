@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
+            $table->string('prefixo');
             $table->string('email')->nullable();
             $table->json('settings');
             $table->unsignedBigInteger('grupo_id');

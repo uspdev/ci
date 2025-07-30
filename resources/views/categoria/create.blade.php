@@ -14,8 +14,13 @@
           <input type="text" class="form-control" id="nome" name="nome" value="{{ old('nome') }}" required>
         </div>
         <div class="mb-3">
+          <label for="prefixo" class="form-label">Prefixo</label>
+          <input type="text" class="form-control" id="prefixo" name="prefixo" value="{{ old('prefixo') }}" required>
+          <small class="form-text text-muted">O prefixo será usado para gerar o código do documento.</small>
+        <div class="mb-3">
           <label for="email" class="form-label">Email</label>
           <input type="text" class="form-control" id="email" name="email" value="{{ old('email') }}">
+          <small class="form-text text-muted">Email para notificações relacionadas a esta categoria.</small>
         </div>
         <div class="form-check mb-3">
           <input type="checkbox" class="form-check-input" id="controlar_sequencial" name="controlar_sequencial"
