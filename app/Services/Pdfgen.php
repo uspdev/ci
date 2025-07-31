@@ -181,13 +181,31 @@ class Pdfgen
 
     public function pdfBuild($dest = 'I', $cfg = [], $fieldMap = null, $path)
     {
-        if($this->isDocxTemplate()) {
-            $this->docxBuild($path, $fieldMap);
+        if ($this->isDocxTemplate()) {
+            $docxPath = preg_replace('/\.pdf$/i', '.docx', $path);
+
+            $this->docxBuild($docxPath, $fieldMap);
+
+            $command = "libreoffice --headless --convert-to pdf --outdir " . escapeshellarg(dirname($path)) . " " . escapeshellarg($docxPath);
+            shell_exec($command);
+
+            if (!file_exists($path)) {
+                throw new \Exception("Falha ao converter o arquivo DOCX para PDF!");
+            }
+
+            @unlink($docxPath);
+
+            if ($dest === 'F') {
+                return $path; 
+            } elseif ($dest === 'D') {
+                return response()->download($path);
+            } else {
+                return response()->file($path);
+            }
         } else {
             if (empty($this->html)) {
                 $this->parse();
             }
-
             $pdf = Pdf::loadHTML($this->html);
 
             if (!empty($cfg['paper'])) {
@@ -205,6 +223,7 @@ class Pdfgen
             }
         }
     }
+
 
     function sexo($sexo, $m, $f)
     {

@@ -475,26 +475,23 @@ class DocumentoController extends Controller
 
         $variaveis = $documento->toArray();
         unset($variaveis['template']);
-        $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
-        $docName = $documento->categoria->grupo->name . '_' . $prefixo . '_';
-        $codigo = '';
-        if (preg_match('/Nº (\d+)\//', $documento->codigo, $matches)) {
-            $codigo = $matches[1];
-        }
-        $docName .= $codigo . '.docx';
+        $variaveis['data_documento'] = $documento->data_documento->format('d/m/Y');
+        $variaveis['controle'] = 'Criado em ' . $documento->data_documento->format('d/m/Y') 
+            . ' | Atualizado em ' . $documento->updated_at->format('d/m/Y H:i:s') . ' | Grupo: ' . $documento->grupo->name;
+
+        $docName = $documento->categoria->grupo->name . '_' . $documento->codigo . '.pdf';
 
         $pdfContent = null;
         $arquivoHash = '';
         $caminhoArquivo = '';
 
         if ($template->arquivo) {
-
             $pdfgen = new Pdfgen();
             $pdfgen->setTemplate(public_path('storage/' . $template->arquivo));
             $pdfgen->setData($variaveis);
             $pdfgen->parse();
             $arquivoHash = $pdfgen->getHash($variaveis);
-            $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.docx';
+            $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.pdf';
             $fullPath = Storage::disk('public')->path($caminhoArquivo);
 
             $arquivoExistente = Arquivo::where('documento_id', $documento->id)
@@ -522,7 +519,6 @@ class DocumentoController extends Controller
             }
         } else {
             $conteudo = $template->conteudo_padrao;
-            $docName = str_replace('.docx', '.pdf', $docName);
             foreach ($variaveis as $chave => $valor) {
                 $conteudo = str_replace('{{ '.$chave.' }}', $valor, $conteudo);
             }
