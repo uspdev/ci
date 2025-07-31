@@ -1,5 +1,5 @@
 <div class="card activities mt-3">
-  <div class="card-header h5">Atividades</div>
+  <div class="card-header h5">Histórico</div>
   <div class="card-body">
     @foreach ($activities as $activity)
       {{ $activity->created_at->format('d/m/Y H:i:s') }} |

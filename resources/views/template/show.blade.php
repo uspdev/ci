@@ -18,10 +18,8 @@
       <h5>Conteúdo Padrão</h5>
       <div class="border p-2 bg-light" style="white-space: pre-wrap;">{!! nl2br(e($template->conteudo_padrao)) !!}</div>
       <hr>
-      <h5>Variáveis</h5>
-      <pre>{{ json_encode($template->variaveis, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
       <a href="{{ route('template.index') }}" class="btn btn-secondary mt-3">Voltar</a>
-      <a href="{{ route('template.gerarPdf', $template) }}" class="btn btn-outline-secondary mt-3">PDF Exemplo</a>
+      <a href="{{ route('template.gerarPdf', $template) }}" class="btn btn-outline-secondary mt-3">Exemplo</a>
     </div>
   </div>
 @endsection

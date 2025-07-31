@@ -30,12 +30,6 @@
         </div>
 
         <div class="mb-3">
-          <label for="variaveis" class="form-label">Variáveis (JSON)</label>
-          <textarea class="form-control autoexpand" id="variaveis" name="variaveis" rows="2">{{ old('variaveis', isset($template) && is_array($template->variaveis) ? json_encode($template->variaveis, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '') }}</textarea>
-          <small class="text-muted">Exemplo: {"nome":"string","data":"date"}</small>
-        </div>
-
-        <div class="mb-3">
           <label for="categorias" class="form-label">Categorias</label>
           <select class="form-select" id="categorias" name="categorias[]" multiple>
             @foreach ($categorias as $cat)

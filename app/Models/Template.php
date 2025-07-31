@@ -16,12 +16,7 @@ class Template extends Model
         'descricao',
         'conteudo_padrao',
         'arquivo',
-        'variaveis',
         'user_id',
-    ];
-
-    protected $casts = [
-        'variaveis' => 'array',
     ];
 
     public function categorias(): BelongsToMany

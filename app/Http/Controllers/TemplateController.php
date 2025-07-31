@@ -41,7 +41,6 @@ class TemplateController extends Controller
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
             'conteudo_padrao' => 'required_without:file|string',
-            'variaveis' => 'nullable|json',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
             'arquivo' => 'nullable|file|mimes:pdf|max:10240',
@@ -56,7 +55,6 @@ class TemplateController extends Controller
             'nome' => $request->nome,
             'descricao' => $request->descricao,
             'conteudo_padrao' => $request->conteudo_padrao,
-            'variaveis' => $request->variaveis ? json_decode($request->variaveis, true) : null,
             'user_id' => Auth::id(),
             'arquivo' => $filePath,
         ]);
@@ -99,7 +97,6 @@ class TemplateController extends Controller
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
             'conteudo_padrao' => 'required|string',
-            'variaveis' => 'nullable|json',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
             'arquivo' => 'nullable|file|mimes:docx|max:10240',
@@ -114,7 +111,6 @@ class TemplateController extends Controller
             'nome' => $request->nome,
             'descricao' => $request->descricao,
             'conteudo_padrao' => $request->conteudo_padrao,
-            'variaveis' => $request->variaveis ? json_decode($request->variaveis, true) : null,
             'arquivo' => $filePath ?? $template->arquivo,
         ]);
 
@@ -145,16 +141,9 @@ class TemplateController extends Controller
     {
         if($template->arquivo){
             return \Illuminate\Support\Facades\Storage::disk('public')->download($template->arquivo);
-        } 
-        
-        $conteudo = $template->conteudo_padrao;
-        if (is_array($template->variaveis)) {
-            foreach ($template->variaveis as $chave => $tipo) {
-                $valor = strtoupper($chave);
-                $conteudo = str_replace('{{ ' . $chave . ' }}', $valor, $conteudo);
-            }
         }
 
+        $conteudo = $template->conteudo_padrao;
         $pdf = pdf::loadHTML($conteudo);
         
         return $pdf->download('template_' . $template->id . '.pdf');
