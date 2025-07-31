@@ -73,17 +73,18 @@ class GrupoController extends Controller
 
         Grupo::setGrupoSession();
 
-        session()->flash('alert-success', 'Grupo criado com sucesso! Categorias padrão (Memorando e Ofício) foram criadas automaticamente.');
+        session()->flash('alert-success', 'Grupo criado com sucesso! Categorias padrão (Memorandos e Ofícios) foram criadas automaticamente.');
         return redirect()->route('grupo.edit', $grupo);
     }
 
     private function criarCategoriasPadrao(Grupo $grupo)
     {
-        $categoriasPadrao = ['Memorando', 'Ofício'];
+        $categoriasPadrao = ['Memorandos' => 'MEM', 'Ofícios' => 'OFI'];
         $settings['controlar_sequencial'] = true;
-        foreach ($categoriasPadrao as $nomeCategoria) {
+        foreach ($categoriasPadrao as $nomeCategoria => $prefixo) {
             Categoria::create([
                 'nome' => $nomeCategoria,
+                'prefixo' => $prefixo,
                 'settings' => $settings,
                 'grupo_id' => $grupo->id
             ]);

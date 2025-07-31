@@ -6,61 +6,55 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">
-      <a href="{{ route('categoria.index') }}">Categorias</a> > <a href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> > {{ $documento->codigo }}</h4>
+        <a href="{{ route('categoria.index') }}">Categorias</a> > <a
+          href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> >
+        {{ $documento->codigo }}
+      </h4>
       <div>
-      <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
+        <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
           @csrf
-          <button type="submit" class="btn btn-outline-success">
+          <button type="submit" class="btn btn-outline-success" title="Copiar documento">
             <i class="fas fa-copy"></i>
           </button>
         </form>
         @if (isset($documento->template))
-          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-outline-secondary" target="_blank">
+          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-outline-secondary" target="_blank"
+            title="Gerar documento">
             <i class="fas fa-file-pdf"></i>
           </a>
         @endif
         @unless ($documento->finalizado)
-          <a href="{{ route('documento.edit', $documento) }}"
-            class="btn btn-outline-primary">
+          <a href="{{ route('documento.edit', $documento) }}" class="btn btn-outline-primary" title="Editar documento">
             <i class="fas fa-edit"></i>
           </a>
           <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
             @csrf
             @method('PATCH')
-            <button type="submit" class="btn btn-warning" 
+            <button type="submit" class="btn btn-warning"
               title="Ao finalizar, este documento será marcado como concluído e não poderá mais ser editado. 
               Certifique-se de que todas as informações estão corretas antes de prosseguir."
               onclick="return confirm('Tem certeza que deseja finalizar este documento?')">
               <i class="fas fa-lock-open"></i> Finalizar
             </button>
           </form>
-          
         @else
           <button type="button" class="btn btn btn-warning fs-6" disabled><i class="fas fa-lock"></i> Finalizado</button>
         @endunless
-        
-        
-        <a href="{{ route('categoria.docs', ['categoria' => $documento->categoria]) }}" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Voltar
-        </a>
       </div>
     </div>
     <div class="card-body">
       <div class="row mb-4">
         <div class="col-md-6">
-          <strong>Código:</strong> {{ $documento->codigo }}
+          Código: <strong>{{ $documento->codigo }}</strong>
         </div>
         <div class="col-md-6 mt-2">
-          <strong>Data do Documento:</strong> {{ $documento->data_documento->format('d/m/Y') }}
+          Data do Documento: <strong>{{ $documento->data_documento->format('d/m/Y') }}</strong>
         </div>
         <div class="col-md-6 mt-2">
-          <strong>Destinatário:</strong> {{ $documento->destinatario }}
+          Remetente: <strong>{{ $documento->remetente }}</strong>
         </div>
         <div class="col-md-6 mt-2">
-          <strong>Remetente:</strong> {{ $documento->remetente }}
-        </div>
-        <div class="col-md-6 mt-2">
-          <strong>Categoria:</strong> {{ $documento->categoria->nome }}
+          Destinatário: <strong>{{ $documento->destinatario }}</strong>
         </div>
       </div>
 
@@ -97,8 +91,16 @@
                   <span class="badge bg-secondary me-2 text-white">{{ ucfirst($arquivo->tipo_arquivo) }}</span>
                   <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank"
                     class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-download"></i> Download
+                    <i class="fas fa-download"></i>
                   </a>
+                  <form action="{{ route('arquivo.destroy', $arquivo) }}" method="POST" style="display:inline;"
+                    onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
                 </div>
               </div>
             @endforeach

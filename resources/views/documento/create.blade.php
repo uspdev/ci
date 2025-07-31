@@ -8,19 +8,19 @@
         <div class="mt-1">O código será gerado automaticamente</div>
       @endif
       <div>
-      @if (isset($documento))
-        <a href="{{ route('documento.show', $documento) }}" class="btn btn-info ml-2">
-          Visualizar
-        </a>
-      @endif
-      <a href="{{ route('categoria.docs', $categoria) }}" class="btn btn-secondary ml-2">
-        <i class="fas fa-arrow-left"></i> Voltar
-      </a>
+        <button type="submit" class="btn btn-success" form="formDocumento">
+          Salvar
+        </button>
+        @if (isset($documento))
+          <a href="{{ route('documento.show', $documento) }}" class="btn btn-warning ml-2">
+            Cancelar
+          </a>
+        @endif
       </div>
     </div>
     <div class="card-body">
 
-      <form
+      <form id="formDocumento"
         action="{{ isset($documento) ? route('documento.update', $documento) : route('categoria.store.doc', $categoria) }}"
         method="POST" enctype="multipart/form-data">
         @csrf
@@ -109,49 +109,13 @@
         </div>
 
         <div class="mb-3">
-          <label for="arquivos" class="form-label">Adicionar Arquivos</label>
+          <label for="arquivos" class="form-label">Adicionar Arquivo</label>
           <input type="file" class="form-control" id="arquivos" name="arquivos[]" multiple>
-          <small class="form-text text-muted">Você pode selecionar mais de um arquivo.</small>
         </div>
-
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-success">
-            {{ isset($documento) ? 'Atualizar' : 'Salvar' }}
-          </button>
-
-        </div>
+        <button type="submit" class="btn btn-success" form="formDocumento">
+          Salvar
+        </button>
       </form>
-
-      @if (isset($documento) && $documento->arquivos->count() > 0)
-        <div class="mt-3">
-          <h5>Arquivos Existentes</h5>
-          <div class="list-group">
-            @foreach ($documento->arquivos->sortByDesc('created_at') as $arquivo)
-              <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>{{ $arquivo->nome_original }}</strong>
-                  <small class="text-muted">({{ number_format($arquivo->tamanho / 1024, 2) }} KB)</small>
-                </div>
-                <div>
-                  <span class="badge bg-secondary text-white">{{ $arquivo->tipo_arquivo }}</span>
-                  <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank"
-                    class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-download"></i>
-                  </a>
-                  <form action="{{ route('arquivo.destroy', $arquivo) }}" method="POST" style="display:inline;"
-                    onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </form>
-                </div>
-              </div>
-            @endforeach
-          </div>
-        </div>
-      @endif
     </div>
   </div>
 @endsection

@@ -324,7 +324,7 @@ class DocumentoController extends Controller
                 $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
             }
 
-            $codigo = $this->gerarCodigo($request->prefixo, $sequencial, $ano);
+            $codigo = $this->gerarCodigo($categoria->prefixo, $sequencial, $ano);
 
             $codigoExists = Documento::where('categoria_id', $categoria->id)
                 ->where('grupo_id', $categoria->grupo_id)
@@ -362,7 +362,7 @@ class DocumentoController extends Controller
                 $updateData['codigo'] = $request->codigo;
                 $codigo = $request->codigo;
             } elseif ($request->ano && $request->sequencial) {
-                $codigo = $this->gerarCodigo($request->prefixo, $request->sequencial, $request->ano);
+                $codigo = $this->gerarCodigo($categoria->prefixo, $request->sequencial, $request->ano);
                 $codigoExists = Documento::where('categoria_id', $categoria->id)
                     ->where('grupo_id', $categoria->grupo_id)
                     ->where('codigo', $codigo)
@@ -382,7 +382,7 @@ class DocumentoController extends Controller
             Mail::to($categoria->email)->send(new DocumentUpdated($original, $documento));
 
         session()->flash('alert-success', 'Documento atualizado com sucesso! Código ' . ($codigo ?? $documento->codigo ?? 'não definido'));
-        return redirect()->route('documento.edit', $documento);
+        return redirect()->route('documento.show', $documento);
     }
 
     /**
@@ -473,15 +473,8 @@ class DocumentoController extends Controller
             return redirect()->back()->with('alert-danger', 'Documento não possui template associado.');
         }
 
-        $variaveis = [
-            'codigo'        => $documento->codigo,
-            'remetente'     => $documento->remetente,
-            'destinatario'  => $documento->destinatario,
-            'data'          => $documento->data_documento->format('d/m/Y'),
-            'assunto'       => $documento->assunto,
-            'mensagem'      => $documento->mensagem,
-        ];
-        
+        $variaveis = $documento->toArray();
+        unset($variaveis['template']);
         $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
         $docName = $documento->categoria->grupo->name . '_' . $prefixo . '_';
         $codigo = '';
@@ -495,19 +488,12 @@ class DocumentoController extends Controller
         $caminhoArquivo = '';
 
         if ($template->arquivo) {
-            $fieldMap = [];
-            if ($template->variaveis) {
-                $fieldMap = is_array($template->variaveis)
-                    ? $template->variaveis
-                    : json_decode($template->variaveis, true);
-            }
 
             $pdfgen = new Pdfgen();
             $pdfgen->setTemplate(public_path('storage/' . $template->arquivo));
             $pdfgen->setData($variaveis);
             $pdfgen->parse();
-
-            $arquivoHash = $pdfgen->getHash($fieldMap);
+            $arquivoHash = $pdfgen->getHash($variaveis);
             $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.docx';
             $fullPath = Storage::disk('public')->path($caminhoArquivo);
 
@@ -519,7 +505,7 @@ class DocumentoController extends Controller
             if ($arquivoExistente && Storage::disk('public')->exists($caminhoArquivo)) {
                 $pdfContent = Storage::disk('public')->get($caminhoArquivo);
             } else {
-                $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $fieldMap, $fullPath);
+                $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $variaveis, $fullPath);
                 
                 $pdfContent = Storage::disk('public')->get($caminhoArquivo);
                 Arquivo::updateOrCreate(
@@ -599,8 +585,7 @@ class DocumentoController extends Controller
         $sequencial = $ultimoSequencial ? $ultimoSequencial + 1 : 1;
         $novoDocumento->ano = $ano;
         $novoDocumento->sequencial = $sequencial;
-        $prefixo = \Illuminate\Support\Str::beforeLast($documento->codigo, ' Nº');
-        $novoDocumento->codigo = $this->gerarCodigo($prefixo, $sequencial, $ano);
+        $novoDocumento->codigo = $this->gerarCodigo($categoria->prefixo, $sequencial, $ano);
 
         $novoDocumento->save();
 
