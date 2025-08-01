@@ -68,6 +68,7 @@ Route::prefix('documentos')->name('documento.')->middleware('auth')->group(funct
 Route::prefix('arquivos')->name('arquivo.')->middleware('auth')->group(function () {
     Route::post('/{documento}', [ArquivoController::class, 'upload'])->name('upload');
     Route::delete('/{arquivo}', [ArquivoController::class, 'destroy'])->name('destroy');
+    Route::get('{arquivo}', [ArquivoController::class, 'download'])->name('download');
 });
 
 Route::prefix('templates')->name('template.')->middleware('auth')->group(function () {

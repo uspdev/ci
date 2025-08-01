@@ -48,7 +48,7 @@ class DocumentoController extends Controller
             abort(403, 'Você não tem permissão para acessar este grupo.');
         }
         if (!$ano){
-            $ano = date('Y'); // verificar ano nullable
+            $ano = date('Y');
         }
 
         $query = Documento::where('grupo_id', $grupoId)
@@ -185,7 +185,7 @@ class DocumentoController extends Controller
 
         if ($request->hasFile('arquivos')) {
             foreach ($request->file('arquivos') as $file) {
-                $path = $file->store('documentos/arquivos', 'public');
+                $path = $file->store('documentos/anexos');
                 $documento->arquivos()->create([
                     'nome_original' => $file->getClientOriginalName(),
                     'tamanho' => $file->getSize(),
@@ -277,7 +277,7 @@ class DocumentoController extends Controller
 
         if ($request->hasFile('arquivos')) {
             foreach ($request->file('arquivos') as $file) {
-                $path = $file->store('documentos/arquivos', 'public');
+                $path = $file->store('documentos/anexos', 'public');
                 $documento->arquivos()->create([
                     'nome_original' => $file->getClientOriginalName(),
                     'tamanho' => $file->getSize(),
@@ -487,24 +487,24 @@ class DocumentoController extends Controller
 
         if ($template->arquivo) {
             $pdfgen = new Pdfgen();
-            $pdfgen->setTemplate(public_path('storage/' . $template->arquivo));
+            $pdfgen->setTemplate(storage_path('app/' . $template->arquivo));
             $pdfgen->setData($variaveis);
             $pdfgen->parse();
             $arquivoHash = $pdfgen->getHash($variaveis);
             $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.pdf';
-            $fullPath = Storage::disk('public')->path($caminhoArquivo);
+            $fullPath = Storage::path($caminhoArquivo);
 
             $arquivoExistente = Arquivo::where('documento_id', $documento->id)
                 ->where('tipo_arquivo', 'gerado')
                 ->where('caminho', $caminhoArquivo)
                 ->first();
 
-            if ($arquivoExistente && Storage::disk('public')->exists($caminhoArquivo)) {
-                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
+            if ($arquivoExistente && Storage::exists($caminhoArquivo)) {
+                $pdfContent = Storage::get($caminhoArquivo);
             } else {
                 $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $variaveis, $fullPath);
                 
-                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
+                $pdfContent = Storage::get($caminhoArquivo);
                 Arquivo::updateOrCreate(
                     [
                         'documento_id' => $documento->id,
@@ -525,20 +525,20 @@ class DocumentoController extends Controller
             
             $arquivoHash = md5($conteudo);
             $caminhoArquivo = 'documentos/gerados/' . $arquivoHash . '.pdf';
-            $fullPath = Storage::disk('public')->path($caminhoArquivo);
+            $fullPath = Storage::path($caminhoArquivo);
 
             $arquivoExistente = Arquivo::where('documento_id', $documento->id)
                 ->where('tipo_arquivo', 'gerado')
                 ->where('caminho', $caminhoArquivo)
                 ->first();
 
-            if ($arquivoExistente && Storage::disk('public')->exists($caminhoArquivo)) {
-                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
+            if ($arquivoExistente && Storage::exists($caminhoArquivo)) {
+                $pdfContent = Storage::get($caminhoArquivo);
             } else {
                 $pdf = Pdf::loadHTML($conteudo);
                 $pdf->save($fullPath); 
                 
-                $pdfContent = Storage::disk('public')->get($caminhoArquivo);
+                $pdfContent = Storage::get($caminhoArquivo);
 
                 Arquivo::updateOrCreate(
                     [

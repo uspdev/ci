@@ -137,7 +137,7 @@ class TemplateController extends Controller
     public function gerarPdf(Template $template)
     {
         if($template->arquivo){
-            return \Illuminate\Support\Facades\Storage::disk('public')->download($template->arquivo);
+            return \Illuminate\Support\Facades\Storage::download($template->arquivo);
         }
 
         $conteudo = $template->conteudo_padrao;

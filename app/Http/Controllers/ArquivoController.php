@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Documento;
 use App\Models\Arquivo;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,6 +45,20 @@ class ArquivoController extends Controller
 
         session()->flash('alert-success', 'Arquivo adicionado com sucesso!');
         return redirect()->route('documento.edit', $documento);
+    }
+
+    public function download(Arquivo $arquivo)
+    {
+        $caminho = $arquivo->caminho;
+
+        if (!Storage::exists($caminho)) {
+            abort(404);
+        }
+
+        $nomeDownload = $arquivo->nome_original ?? basename($caminho);
+        $nomeDownload = str_replace(['/', '\\'], '-', $nomeDownload);
+
+        return Storage::download($caminho, $nomeDownload);
     }
 
     public function destroy(Arquivo $arquivo)

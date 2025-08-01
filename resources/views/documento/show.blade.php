@@ -89,10 +89,11 @@
                 </div>
                 <div>
                   <span class="badge bg-secondary me-2 text-white">{{ ucfirst($arquivo->tipo_arquivo) }}</span>
-                  <a href=".{{ Storage::url($arquivo->caminho) }}" target="_blank"
+                  <a href="{{ route('arquivo.download', $arquivo) }}" target="_blank"
                     class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-download"></i>
                   </a>
+
                   <form action="{{ route('arquivo.destroy', $arquivo) }}" method="POST" style="display:inline;"
                     onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
                     @csrf
