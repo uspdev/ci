@@ -3,7 +3,7 @@
 @section('content')
   <div class="card">
     <div class="card-header">
-      <h4>Novo Template</h4>
+      <h4>{{ isset($template) ? 'Editar' : 'Novo'  }} Template</h4>
     </div>
     <div class="card-body">
       <form action="{{ isset($template) ? route('template.update', $template) : route('template.store') }}"
@@ -26,7 +26,7 @@
 
         <div class="mb-3">
           <label for="conteudo_padrao" class="form-label">Conteúdo Padrão</label>
-          <textarea class="form-control" id="conteudo_padrao" name="conteudo_padrao" rows="6" required>{{ old('conteudo_padrao', $template->conteudo_padrao ?? '') }}</textarea>
+          <textarea class="form-control" id="conteudo_padrao" name="conteudo_padrao" rows="6">{{ old('conteudo_padrao', $template->conteudo_padrao ?? '') }}</textarea>
         </div>
 
         <div class="mb-3">
@@ -46,8 +46,8 @@
           <label for="arquivo" class="form-label">Arquivo de template (.docx)</label>
           <input type="file" class="form-control" id="arquivo" name="arquivo" accept="application/docx"
             value="{{ old('arquivo', $template->arquivo ?? '') }}">
+          <small class="form-text text-muted">As variáveis devem ser definidas no template como ${nome_da_variavel}. As variáveis disponíveis são: id, codigo, sequencial, ano, destinatario, remetente, data_documento, assunto, mensagem, finalizado, data_finalizacao e conteudo</small>
         </div>
-        
         <button type="submit" class="btn btn-success">{{ isset($template) ? 'Atualizar' : 'Salvar' }}</button>
         <a href="{{ route('template.index') }}" class="btn btn-secondary">Voltar</a>
       </form>

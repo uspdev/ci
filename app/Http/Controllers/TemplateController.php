@@ -96,7 +96,7 @@ class TemplateController extends Controller
         $request->validate([
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
-            'conteudo_padrao' => 'required|string',
+            'conteudo_padrao' => 'nullable|string',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
             'arquivo' => 'nullable|file|mimes:docx|max:10240',
@@ -121,7 +121,7 @@ class TemplateController extends Controller
         }
 
         session()->flash('alert-success', 'Template atualizado com sucesso!');
-        return redirect()->route('template.edit', $template);
+        return redirect()->route('template.show', $template);
     }
 
     public function destroy(Template $template)

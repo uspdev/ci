@@ -15,10 +15,11 @@
         @endforeach
       </p>
       <hr>
-      <h5>Conteúdo Padrão</h5>
-      <div class="border p-2 bg-light" style="white-space: pre-wrap;">{!! nl2br(e($template->conteudo_padrao)) !!}</div>
-      <hr>
-      <a href="{{ route('template.index') }}" class="btn btn-secondary mt-3">Voltar</a>
+      @isset($template->conteudo_padrao)
+        <h5>Conteúdo Padrão</h5>
+        <div class="border p-2 bg-light" style="white-space: pre-wrap;">{!! nl2br(e($template->conteudo_padrao)) !!}</div>
+        <hr>
+      @endisset
       <a href="{{ route('template.gerarPdf', $template) }}" class="btn btn-outline-secondary mt-3">Exemplo</a>
     </div>
   </div>
