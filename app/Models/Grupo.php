@@ -25,6 +25,11 @@ class Grupo extends Model
         return $this->hasMany(Categoria::class, 'grupo_id');
     }
 
+    public function templates()
+    {
+        return $this->belongsToMany(Template::class, 'grupo_template', 'grupo_id', 'template_id');
+    }
+
     public function documentos(): HasMany
     {
         return $this->hasMany(Documento::class, 'grupo_id');

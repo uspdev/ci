@@ -28,9 +28,8 @@ class TemplateController extends Controller
     public function create()
     {
         $this->authorize('grupoManager');
-        $categorias = Categoria::all();
 
-        return view('template.create', compact('categorias'));
+        return view('template.create');
     }
 
     public function store(Request $request)
@@ -82,9 +81,7 @@ class TemplateController extends Controller
             abort(403, 'Você não tem permissão para editar este template.');
         }
 
-        $categorias = Categoria::all();
-
-        return view('template.create', compact('template', 'categorias'));
+        return view('template.create', compact('template'));
     }
 
     public function update(Request $request, Template $template)

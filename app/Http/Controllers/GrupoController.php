@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Grupo;
 use App\Models\Categoria;
+use App\Models\Template;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Auth;
@@ -43,8 +44,8 @@ class GrupoController extends Controller
     public function create()
     {
         $this->authorize('manager');
-
-        return view('grupo.create');
+        $templates = Template::all();
+        return view('grupo.create', compact('templates'));
     }
 
     /**
@@ -60,12 +61,18 @@ class GrupoController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'templates' => 'nullable|array',
+            'templates.*' => 'exists:templates,id',
         ]);
         
         $grupo = Grupo::create([
             'name' => $request->name, 
             'description' => $request->description
         ]);
+
+        if ($request->has('templates')) {
+            $grupo->templates()->sync($request->templates);
+        }
 
         $permission = Permission::firstOrCreate(['name' => 'manager_' . $grupo->id]);
 
@@ -103,7 +110,9 @@ class GrupoController extends Controller
             return redirect()->route('grupo.show', $grupo);
         }
 
-        return view('grupo.edit', compact('grupo'));
+        $templates = Template::all();
+
+        return view('grupo.edit', compact('grupo', 'templates'));
     }
 
     /**
@@ -122,15 +131,24 @@ class GrupoController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'templates' => 'nullable|array',
+            'templates.*' => 'exists:templates,id',
         ]);
 
         $grupo->update([
             'name' => $request->name,
             'description' => $request->description
         ]);
+
+        if ($request->has('templates')) {
+            $grupo->templates()->sync($request->templates);
+        } else {
+            $grupo->templates()->detach();
+        }
+
         Grupo::setGrupoSession();
         session()->flash('alert-success', 'Grupo atualizado com sucesso!');
-        return redirect()->route('grupo.edit', $grupo);
+        return redirect()->route('grupo.index');
     }
 
     /**

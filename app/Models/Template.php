@@ -25,6 +25,12 @@ class Template extends Model
                     ->withTimestamps();
     }
 
+    public function grupos(): BelongsToMany
+    {
+        return $this->belongsToMany(Grupo::class, 'grupo_template')
+                    ->withTimestamps();
+    }
+
     public function documentos(): HasMany
     {
         return $this->hasMany(Documento::class, 'template_id');

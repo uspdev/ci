@@ -18,6 +18,21 @@
           <label for="description">Descrição</label>
           <input type="text" id="description" name="description" class="form-control" value="{{ old('description') }}">
         </div>
+        <div class="mb-3">
+          <label class="form-label">Templates</label>
+          <div>
+            @foreach ($templates as $template)
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="template_{{ $template->id }}" name="templates[]"
+                  value="{{ $template->id }}">
+                <label class="form-check-label" for="template_{{ $template->id }}">
+                  {{ $template->nome }}
+                </label>
+              </div>
+            @endforeach
+          </div>
+          <small class="text-muted">Selecione um ou mais templates.</small>
+        </div>
         <button type="submit" class="btn btn-primary mt-3">Salvar</button>
         <a href="{{ route('grupo.index') }}" class="btn btn-secondary btn-sm mr-2 mt-3 pb-2">
           Cancelar

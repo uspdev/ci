@@ -30,19 +30,6 @@
         </div>
 
         <div class="mb-3">
-          <label for="categorias" class="form-label">Categorias</label>
-          <select class="form-select" id="categorias" name="categorias[]" multiple>
-            @foreach ($categorias as $cat)
-              <option value="{{ $cat->id }}"
-                {{ (isset($template) && $template->categorias->contains($cat->id)) || collect(old('categorias'))->contains($cat->id) ? 'selected' : '' }}>
-                {{ $cat->nome }}
-              </option>
-            @endforeach
-          </select>
-          <small class="text-muted">Selecione uma ou mais categorias.</small>
-        </div>
-
-        <div class="mb-3">
           <label for="arquivo" class="form-label">Arquivo de template (.docx)</label>
           <input type="file" class="form-control" id="arquivo" name="arquivo" accept="application/docx"
             value="{{ old('arquivo', $template->arquivo ?? '') }}">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Categoria;
 use App\Models\Grupo;
+use App\Models\Template;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -82,8 +83,9 @@ class CategoriaController extends Controller
         }
 
         $grupo = Grupo::findOrFail($grupoId);
+        $templates = $grupo->templates()->get();
 
-        return view('categoria.create', compact('grupo'));
+        return view('categoria.create', compact('grupo', 'templates'));
     }
 
     /**
@@ -110,7 +112,9 @@ class CategoriaController extends Controller
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
             'prefixo' => 'required|string|max:255',
             'email' => 'nullable|string|max:100',
-            'controlar_sequencial' => 'nullable|boolean'
+            'controlar_sequencial' => 'nullable|boolean',
+            'templates' => 'nullable|array',
+            'templates.*' => 'exists:templates,id',
         ]);
         $settings['controlar_sequencial'] =  $request->controlar_sequencial ?? false;
         $categoria = Categoria::create([
@@ -120,6 +124,18 @@ class CategoriaController extends Controller
             'settings' => $settings,
             'grupo_id' => $grupoId,
         ]);
+        $templatesIds = $request->input('templates', []);
+
+        $templatesValidos = Template::whereIn('id', $templatesIds)
+            ->whereHas('grupos', function ($query) use ($categoria) {
+                $query->where('grupo_id', $categoria->grupo_id);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        if ($request->has('templates')) {
+            $categoria->templates()->sync($templatesValidos);
+        }
 
         session()->flash('alert-success', 'Categoria criada com sucesso!');
         return redirect()->route('categoria.index');
@@ -160,7 +176,8 @@ class CategoriaController extends Controller
             abort(403, 'Você não tem permissão para editar esta categoria.');
         }
 
-        return view('categoria.edit', compact('categoria'));
+        $templates = $categoria->grupo->templates()->get();
+        return view('categoria.edit', compact('categoria', 'templates'));
     }
 
     /**
@@ -184,8 +201,24 @@ class CategoriaController extends Controller
             'nome' => 'required|string|max:255|unique:categorias,nome,' . $categoria->id . ',id,grupo_id,' . $categoria->grupo_id,
             'prefixo' => 'required|string|max:255',
             'email' => 'nullable|string|max:100',
-            'controlar_sequencial' => 'nullable|boolean'
+            'controlar_sequencial' => 'nullable|boolean',
+            'templates' => 'nullable|array',
+            'templates.*' => 'exists:templates,id',
         ]);
+        $templatesIds = $request->input('templates', []);
+
+        $templatesValidos = Template::whereIn('id', $templatesIds)
+            ->whereHas('grupos', function ($query) use ($categoria) {
+                $query->where('grupo_id', $categoria->grupo_id);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        if ($request->has('templates')) {
+            $categoria->templates()->sync($templatesValidos);
+        } else {
+            $categoria->templates()->detach();
+        }
 
         $settings['controlar_sequencial'] =  $request->controlar_sequencial ?? false;
         $categoria->update([

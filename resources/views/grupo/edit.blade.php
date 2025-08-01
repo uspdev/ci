@@ -26,8 +26,28 @@
               <textarea id="description" name="description" class="form-control" rows="3">{{ $grupo->description }}</textarea>
             </div>
 
+            <div class="mb-3">
+              <label class="form-label">Templates</label>
+              <div>
+                @foreach ($templates as $template)
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="template_{{ $template->id }}" 
+                      name="templates[]" 
+                      value="{{ $template->id }}"
+                      {{ (isset($grupo) && $grupo->templates->contains($template->id)) || collect(old('templates'))->contains($template->id) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="template_{{ $template->id }}">
+                      {{ $template->nome }}
+                    </label>
+                  </div>
+                @endforeach
+              </div>
+              <small class="text-muted">Selecione um ou mais templates.</small>
+            </div>
             <div class="form-group">
-              <button type="submit" class="btn btn-primary" disabled>Salvar Alterações</button>
+              <button type="submit" class="btn btn-primary">Salvar Alterações</button>
               <a href="{{ route('grupo.index') }}" class="btn btn-secondary">Cancelar</a>
             </div>
           </form>
@@ -60,26 +80,4 @@
       </div>
     </div>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const nameInput = document.getElementById('name');
-      const descInput = document.getElementById('description');
-      const submitBtn = document.querySelector('button[type="submit"]');
-
-      const originalValues = {
-        name: nameInput.value,
-        description: descInput.value
-      };
-
-      function checkChanges() {
-        const nameChanged = nameInput.value !== originalValues.name;
-        const descChanged = descInput.value !== originalValues.description;
-        submitBtn.disabled = !(nameChanged || descChanged);
-      }
-
-      nameInput.addEventListener('input', checkChanges);
-      descInput.addEventListener('input', checkChanges);
-    });
-  </script>
 @endsection
