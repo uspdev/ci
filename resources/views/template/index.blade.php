@@ -4,9 +4,11 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Templates</h4>
-      <a href="{{ route('template.create') }}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Novo Template
-      </a>
+      @can('manager')
+        <a href="{{ route('template.create') }}" class="btn btn-success">
+          <i class="fas fa-plus"></i> Novo Template
+        </a>
+      @endcan
     </div>
     <div class="card-body">
       @if ($templates->isEmpty())
@@ -40,17 +42,19 @@
                       class="btn btn-outline-secondary btn-sm mr-2 d-flex">
                       <i class="fas fa-file-pdf"></i>
                     </a>
-                    <a href="{{ route('template.edit', $template) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <form action="{{ route('template.destroy', $template) }}" method="POST" class="d-inline">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn btn-outline-danger btn-sm d-flex"
-                        onclick="return confirm('Tem certeza?')">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form>
+                    @can('manager')
+                      <a href="{{ route('template.edit', $template) }}" class="btn btn-outline-primary btn-sm mr-2 d-flex">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <form action="{{ route('template.destroy', $template) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger btn-sm d-flex"
+                          onclick="return confirm('Tem certeza?')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    @endcan
                   </div>
                 </td>
               </tr>

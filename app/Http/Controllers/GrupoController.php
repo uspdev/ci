@@ -81,7 +81,7 @@ class GrupoController extends Controller
         Grupo::setGrupoSession();
 
         session()->flash('alert-success', 'Grupo criado com sucesso! Categorias padrão (Memorandos e Ofícios) foram criadas automaticamente.');
-        return redirect()->route('grupo.edit', $grupo);
+        return redirect()->route('grupo.index');
     }
 
     private function criarCategoriasPadrao(Grupo $grupo)
@@ -130,7 +130,7 @@ class GrupoController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'templates' => 'nullable|array',
             'templates.*' => 'exists:templates,id',
         ]);

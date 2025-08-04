@@ -5,7 +5,9 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0"><a href="{{ route('template.index') }}">Templates</a> >
         {{ $template->nome }}</h4>
-      <a href="{{ route('template.edit', $template) }}" class="btn btn-primary">Editar</a>
+        @can('manager')
+          <a href="{{ route('template.edit', $template) }}" class="btn btn-primary">Editar</a>
+        @endcan
     </div>
     <div class="card-body">
       <p><strong>Descrição:</strong> {{ $template->descricao ?? '-' }}</p>

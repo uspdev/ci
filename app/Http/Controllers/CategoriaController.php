@@ -11,16 +11,8 @@ use Illuminate\Support\Facades\Gate;
 
 class CategoriaController extends Controller
 {
-    /**
-     * Exibe a lista de categorias do grupo ativo
-     *
-     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
-     */
-    public function index(Request $request)
+    private function verifyGrupo()
     {
-        $this->authorize('grupoManager');
-        \UspTheme::activeUrl('categorias');
-
         $grupoId = session('grupo_id');
         
         if (!$grupoId) {
@@ -30,6 +22,18 @@ class CategoriaController extends Controller
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
             abort(403, 'Você não tem permissão para acessar este grupo.');
         }
+    }
+    /**
+     * Exibe a lista de categorias do grupo ativo
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request)
+    {
+        $this->authorize('grupoManager');
+        \UspTheme::activeUrl('categorias');
+        $this->verifyGrupo();
+        $grupoId = session('grupo_id');
 
         $categorias = Categoria::where('grupo_id', $grupoId)->get();
 
@@ -49,13 +53,7 @@ class CategoriaController extends Controller
 
         $grupoId = session('grupo_id');
         
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
-
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-            abort(403, 'Você não tem permissão para acessar este grupo.');
-        }
+        $this->verifyGrupo();
 
         $categorias = Categoria::where('grupo_id', $grupoId)->get();
 
@@ -74,13 +72,7 @@ class CategoriaController extends Controller
 
         $grupoId = session('grupo_id');
         
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
-
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-            abort(403, 'Você não tem permissão para criar categorias neste grupo.');
-        }
+        $this->verifyGrupo();
 
         $grupo = Grupo::findOrFail($grupoId);
         $templates = $grupo->templates()->get();
@@ -100,14 +92,7 @@ class CategoriaController extends Controller
 
         $grupoId = session('grupo_id');
         
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
-
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-            abort(403, 'Você não tem permissão para criar categorias neste grupo.');
-        }
-
+        $this->verifyGrupo();
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
             'prefixo' => 'required|string|max:255',
@@ -149,12 +134,10 @@ class CategoriaController extends Controller
      */
     public function show(Categoria $categoria)
     {
-        if ($categoria->grupo_id != session('grupo_id')) {
-            abort(404);
-        }
+        $this->verifyGrupo();
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para visualizar esta categoria.');
+        if ($categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
 
         return view('categoria.show', compact('categoria'));
@@ -168,12 +151,10 @@ class CategoriaController extends Controller
      */
     public function edit(Categoria $categoria)
     {
-        if ($categoria->grupo_id != session('grupo_id')) {
-            abort(404);
-        }
+        $this->verifyGrupo();
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para editar esta categoria.');
+        if ($categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
 
         $templates = $categoria->grupo->templates()->get();
@@ -189,12 +170,10 @@ class CategoriaController extends Controller
      */
     public function update(Request $request, Categoria $categoria)
     {
-        if ($categoria->grupo_id != session('grupo_id')) {
-            abort(404);
-        }
+        $this->verifyGrupo();
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para editar esta categoria.');
+        if ($categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
 
         $request->validate([
@@ -240,12 +219,10 @@ class CategoriaController extends Controller
      */
     public function destroy(Categoria $categoria)
     {
-        if ($categoria->grupo_id != session('grupo_id')) {
-            abort(404);
-        }
+        $this->verifyGrupo();
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para excluir esta categoria.');
+        if ($categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
 
         if ($categoria->documentos()->count() > 0) {

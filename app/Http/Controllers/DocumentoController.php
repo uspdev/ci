@@ -20,6 +20,20 @@ use App\Mail\DocumentUpdated;
 
 class DocumentoController extends Controller
 {
+    private function verifyGrupo()
+    {
+        $grupoId = session('grupo_id');
+        
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
+        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
+
+            abort(403, 'Você não tem permissão para acessar este grupo.');
+        }
+    }
+    
     /**
      * Gera código automático para documento
      * Formato: CATEGORIA Nº XXX/AAAA/GRUPO-e
@@ -37,16 +51,14 @@ class DocumentoController extends Controller
     {
         $this->authorize('grupoManager');
         \UspTheme::activeUrl('documentos');
-        
+
         $grupoId = session('grupo_id');
         
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        $this->verifyGrupo();
+        if ($categoria->grupo_id != $grupoId) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
 
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-            abort(403, 'Você não tem permissão para acessar este grupo.');
-        }
         if (!$ano){
             $ano = date('Y');
         }
@@ -77,13 +89,7 @@ class DocumentoController extends Controller
 
         $grupoId = session('grupo_id');
         
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
-
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-            abort(403, 'Você não tem permissão para criar documentos neste grupo.');
-        }
+        $this->verifyGrupo();
 
         $templates = $categoria->templates;
         
@@ -97,11 +103,9 @@ class DocumentoController extends Controller
     {
         $this->authorize('grupoManager');
         $grupoId = session('grupo_id');
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-            abort(403, 'Você não tem permissão para criar documentos neste grupo.');
+        $this->verifyGrupo();
+        if ($categoria->grupo_id != $grupoId) {
+            abort(403, 'Categoria não pertence ao grupo selecionado.');
         }
 
         $request->validate([
@@ -118,9 +122,6 @@ class DocumentoController extends Controller
         ]);
 
         $categoria = Categoria::findOrFail($categoria);
-        if ($categoria->grupo_id != $grupoId) {
-            abort(403, 'Categoria não pertence ao grupo selecionado.');
-        }
 
         $codigo = null;
 
@@ -212,8 +213,9 @@ class DocumentoController extends Controller
      */
     public function show(Documento $documento)
     {
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para visualizar este documento.');
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
         }
 
         $activities =  Activity::orderBy('created_at', 'DESC')->where('subject_id', $documento->id)->get();
@@ -229,8 +231,9 @@ class DocumentoController extends Controller
      */
     public function edit(Documento $documento)
     {
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para editar este documento.');
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
         }
 
         if ($documento->finalizado) {
@@ -253,8 +256,9 @@ class DocumentoController extends Controller
      */
     public function update(Request $request, Documento $documento)
     {
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para editar este documento.');
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
         }
 
         if ($documento->finalizado) {
@@ -291,10 +295,6 @@ class DocumentoController extends Controller
 
         $categoria = $documento->categoria;
         $original = $documento;
-
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para mover este documento para esta categoria.');
-        }
 
         $updateData = [
             'destinatario' => $request->destinatario,
@@ -393,8 +393,9 @@ class DocumentoController extends Controller
      */
     public function finalizar(Documento $documento)
     {
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para finalizar este documento.');
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
         }
 
         if ($documento->finalizado) {
@@ -420,8 +421,9 @@ class DocumentoController extends Controller
      */
     public function destroy(Documento $documento)
     {
-        if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
-            abort(403, 'Você não tem permissão para excluir este documento.');
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
         }
 
         if ($documento->finalizado) {
@@ -441,6 +443,12 @@ class DocumentoController extends Controller
 
     public function detalharAtividade(Activity $activity)
     {
+        $this->verifyGrupo();
+        $documento = Documento::findOrFail($activity->subject_id);
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
+        }
+
         if(isset($activity->properties["arquivo"])){
             $arquivo = Arquivo::withTrashed()->where([
             'id' => $activity->properties['id']
@@ -448,7 +456,6 @@ class DocumentoController extends Controller
             return redirect(Storage::url($arquivo->caminho));
         }
         
-        $documento = Documento::findOrFail($activity->subject_id);
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {
             abort(403, 'Você não tem permissão para visualizar este documento.');
         }
@@ -467,6 +474,11 @@ class DocumentoController extends Controller
 
     public function gerarPdf(Documento $documento)
     {
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
+        }
+
         $template = $documento->template;
 
         if (!$template) {
@@ -561,6 +573,11 @@ class DocumentoController extends Controller
 
     public function copy(Documento $documento)
     {
+        $this->verifyGrupo();
+        if ($documento->categoria->grupo_id != session('grupo_id')) {
+            abort(403, 'Documento não pertence ao grupo selecionado.');
+        }
+
         $categoria = $documento->categoria;
         $grupoId = $documento->grupo_id;
 

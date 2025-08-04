@@ -4,12 +4,10 @@ $menu = [
     [
         'text' => 'Categorias',
         'url' => 'categorias',
-        'can' => 'user'
     ],
     [
         'text' => 'Templates',
         'url' => 'templates',
-        'can' => 'user'
     ],
 ];
 

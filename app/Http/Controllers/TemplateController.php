@@ -27,14 +27,14 @@ class TemplateController extends Controller
 
     public function create()
     {
-        $this->authorize('grupoManager');
+        $this->authorize('manager');
 
         return view('template.create');
     }
 
     public function store(Request $request)
     {
-        $this->authorize('grupoManager');
+        $this->authorize('manager');
 
         $request->validate([
             'nome' => 'required|string|max:255',
@@ -68,7 +68,7 @@ class TemplateController extends Controller
 
     public function show(Template $template)
     {
-        if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
+        if (!Gate::allows('grupoManager')) {
             abort(403, 'Você não tem permissão para visualizar este template.');
         }
 
@@ -77,7 +77,7 @@ class TemplateController extends Controller
 
     public function edit(Template $template)
     {
-        if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
+        if (!Gate::allows('manager')) {
             abort(403, 'Você não tem permissão para editar este template.');
         }
 
@@ -86,7 +86,7 @@ class TemplateController extends Controller
 
     public function update(Request $request, Template $template)
     {
-        if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
+        if (!Gate::allows('manager')) {
             abort(403, 'Você não tem permissão para editar este template.');
         }
 
@@ -123,7 +123,7 @@ class TemplateController extends Controller
 
     public function destroy(Template $template)
     {
-        if (!Gate::allows('manager') && $template->user_id !== Auth::id()) {
+        if (!Gate::allows('manager')) {
             abort(403, 'Você não tem permissão para excluir este template.');
         }
 
