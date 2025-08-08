@@ -100,7 +100,7 @@ class DocumentoController extends Controller
     /**
      * Armazena um novo documento no banco de dados
      */
-    public function store(Request $request, $categoria)
+    public function store(Request $request, Categoria $categoria)
     {
         $this->authorize('grupoManager');
         $grupoId = session('grupo_id');
@@ -124,8 +124,6 @@ class DocumentoController extends Controller
             'template_id' => 'nullable|exists:templates,id',
             'arquivo_id' => 'nullable|exists:documentos,id',
         ]);
-
-        $categoria = Categoria::findOrFail($categoria);
 
         $codigo = null;
 
@@ -297,7 +295,7 @@ class DocumentoController extends Controller
 
         if ($request->hasFile('arquivos')) {
             foreach ($request->file('arquivos') as $file) {
-                $path = $file->store('documentos/anexos', 'public');
+                $path = $file->store('documentos/anexos');
                 $documento->arquivos()->create([
                     'nome_original' => $file->getClientOriginalName(),
                     'tamanho' => $file->getSize(),

@@ -31,7 +31,7 @@ class ArquivoController extends Controller
         $arquivo = $request->file('arquivo');
         $nomeOriginal = $arquivo->getClientOriginalName();
         $nomeArquivo = time() . '_' . $nomeOriginal;
-        $caminho = $arquivo->storeAs('documentos/arquivos', $nomeArquivo, 'public');
+        $caminho = $arquivo->storeAs('documentos/arquivos', $nomeArquivo);
 
         Arquivo::create([
             'documento_id' => $documento->id,
@@ -64,10 +64,6 @@ class ArquivoController extends Controller
     public function destroy(Arquivo $arquivo)
     {
         $documento = $arquivo->documento;
-
-        // if ($arquivo->caminho) {
-        //     \Storage::disk('public')->delete($arquivo->caminho);
-        // }
 
         $nome = $arquivo->nome_original;
         $id = $arquivo->id;
