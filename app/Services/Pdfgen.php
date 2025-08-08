@@ -165,7 +165,9 @@ class Pdfgen
         }
 
         $templateProcessor = new TemplateProcessor($this->template);
-
+        
+        unset($this->data['template_id']);
+        unset($this->data['categoria']);
         foreach ($fieldMap as $campo => $info) {
             $valor = $this->data[$campo] ?? '';
 
