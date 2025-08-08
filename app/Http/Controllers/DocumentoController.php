@@ -186,19 +186,21 @@ class DocumentoController extends Controller
 
         $documento = Documento::create($docData);
 
-        if ($request->hasFile('arquivos')) {
-            foreach ($request->file('arquivos') as $file) {
-                $path = $file->store('documentos/anexos');
-                $documento->arquivos()->create([
-                    'nome_original' => $file->getClientOriginalName(),
-                    'tamanho' => $file->getSize(),
-                    'tipo_mime' => $file->getClientMimeType(),
-                    'tipo_arquivo' => 'upload',
-                    'caminho' => $path,
-                    'user_id' => Auth::id(),
-                ]);
-            }
+        if ($request->hasFile('arquivo')) {
+            $file = $request->file('arquivo');
+            $path = $file->store('documentos/anexos');
+            $arquivo = $documento->arquivos()->create([
+                'nome_original' => $file->getClientOriginalName(),
+                'tamanho' => $file->getSize(),
+                'tipo_mime' => $file->getClientMimeType(),
+                'tipo_arquivo' => 'upload',
+                'caminho' => $path,
+                'user_id' => Auth::id(),
+            ]);
+            
+            $documento->arquivo_id = $arquivo->id ?? null;
         }
+        
         
         if(isset($categoria->email))
             Mail::to($categoria->email)->send(new DocumentCreated($documento));
@@ -293,20 +295,33 @@ class DocumentoController extends Controller
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
-        if ($request->hasFile('arquivos')) {
-            foreach ($request->file('arquivos') as $file) {
-                $path = $file->store('documentos/anexos');
-                $documento->arquivos()->create([
-                    'nome_original' => $file->getClientOriginalName(),
-                    'tamanho' => $file->getSize(),
-                    'tipo_mime' => $file->getClientMimeType(),
-                    'tipo_arquivo' => 'upload',
-                    'caminho' => $path,
-                    'user_id' => Auth::id(),
-                ]);
-            }
-        }
+        if ($request->hasFile('arquivo')) {
+            $file = $request->file('arquivo');
+            $path = $file->store('documentos/anexos');
+            $novoArquivo = $documento->arquivos()->create([
+                'nome_original' => $file->getClientOriginalName(),
+                'tamanho' => $file->getSize(),
+                'tipo_mime' => $file->getClientMimeType(),
+                'tipo_arquivo' => 'upload',
+                'caminho' => $path,
+                'user_id' => Auth::id(),
+            ]);
 
+            if ($documento->arquivo_id) {
+                $arquivo = $documento->arquivos()->where('id', $documento->arquivo_id)->firstOrFail();
+                $nome = $arquivo->nome_original;
+                $id = $arquivo->id;
+                $arquivo->delete();
+
+                activity()
+                    ->performedOn($documento)
+                    ->causedBy(auth()->user())
+                    ->withProperties(['id' => $id, 'arquivo' => $nome])
+                    ->log("Arquivo substituído: {$nome}");
+            }
+            $documento->arquivo_id = $novoArquivo->id;
+        }
+        
         $categoria = $documento->categoria;
         $original = $documento;
 

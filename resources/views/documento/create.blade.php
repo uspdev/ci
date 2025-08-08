@@ -2,21 +2,24 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h4 class="mb-0">{{ isset($documento) ? 'Editar documento: ' . $documento->codigo : 'Novo documento' }}</h4>
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">{{ isset($documento) ? 'Editar documento: ' . $documento->codigo : 'Novo documento' }}</h4>
+
+        <div>
+          <button type="submit" class="btn btn-success" form="formDocumento">
+            Salvar
+          </button>
+          @if (isset($documento))
+            <a href="{{ route('documento.show', $documento) }}" class="btn btn-warning ml-2">
+              Cancelar
+            </a>
+          @endif
+        </div>
+      </div>
       @if (!isset($documento) && $categoria->settings['controlar_sequencial'] == 1)
         <div class="mt-1">O código será gerado automaticamente</div>
       @endif
-      <div>
-        <button type="submit" class="btn btn-success" form="formDocumento">
-          Salvar
-        </button>
-        @if (isset($documento))
-          <a href="{{ route('documento.show', $documento) }}" class="btn btn-warning ml-2">
-            Cancelar
-          </a>
-        @endif
-      </div>
     </div>
     <div class="card-body">
 
@@ -110,7 +113,7 @@
 
         <div class="mb-3">
           <label for="arquivos" class="form-label">Adicionar Arquivo</label>
-          <input type="file" class="form-control" id="arquivos" name="arquivos[]" multiple>
+          <input type="file" class="form-control" id="arquivos" name="arquivo">
         </div>
         <button type="submit" class="btn btn-success" form="formDocumento">
           Salvar
