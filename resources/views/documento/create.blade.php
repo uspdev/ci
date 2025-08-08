@@ -2,9 +2,9 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="position: sticky; top: 0; z-index: 10;" >
       <div class="d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">{{ isset($documento) ? 'Editar documento: ' . $documento->codigo : 'Novo documento' }}</h4>
+        <h4 class="mb-0">{{ isset($documento) ? $documento->categoria->nome .' > '.  $documento->codigo . ' > Editar' : 'Novo documento' }}</h4>
 
         <div>
           <button type="submit" class="btn btn-success" form="formDocumento">

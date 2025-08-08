@@ -4,7 +4,7 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex justify-content-between align-items-center card-header-sticky">
       <h4 class="mb-0">Categorias</h4>
       <a href="{{ route('categoria.create') }}" class="btn btn-success">
         <i class="fas fa-plus"></i> Nova Categoria

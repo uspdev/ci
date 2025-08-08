@@ -4,7 +4,7 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex justify-content-between align-items-center card-header-sticky">
       <h4 class="mb-0">
         <a href="{{ route('categoria.index') }}">Categorias</a> > <a
           href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> >
