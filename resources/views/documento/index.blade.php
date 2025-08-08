@@ -25,7 +25,7 @@
       </a>
     </div>
     <div class="card-body">
-      <table id="documentos-table" class="table table-striped table-bordered">
+      <table id="documentos-table" class="table datatable-simples table-striped table-bordered">
         <thead>
           <tr>
             <th>Sequencial</th>
