@@ -14,10 +14,6 @@ class CategoriaController extends Controller
     private function verifyGrupo()
     {
         $grupoId = session('grupo_id');
-        
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
             abort(403, 'Você não tem permissão para acessar este grupo.');
@@ -32,6 +28,11 @@ class CategoriaController extends Controller
     {
         $this->authorize('grupoManager');
         \UspTheme::activeUrl('categorias');
+
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         $grupoId = session('grupo_id');
 
@@ -52,7 +53,11 @@ class CategoriaController extends Controller
         \UspTheme::activeUrl('categorias/admin');
 
         $grupoId = session('grupo_id');
-        
+
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
 
         $categorias = Categoria::where('grupo_id', $grupoId)->get();
@@ -71,6 +76,10 @@ class CategoriaController extends Controller
         $this->authorize('grupoManager');
 
         $grupoId = session('grupo_id');
+
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
         
         $this->verifyGrupo();
 
@@ -91,6 +100,10 @@ class CategoriaController extends Controller
         $this->authorize('grupoManager');
 
         $grupoId = session('grupo_id');
+
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
         
         $this->verifyGrupo();
         $request->validate([
@@ -134,6 +147,10 @@ class CategoriaController extends Controller
      */
     public function show(Categoria $categoria)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
 
         if ($categoria->grupo_id != session('grupo_id')) {
@@ -151,6 +168,10 @@ class CategoriaController extends Controller
      */
     public function edit(Categoria $categoria)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
 
         if ($categoria->grupo_id != session('grupo_id')) {
@@ -170,6 +191,10 @@ class CategoriaController extends Controller
      */
     public function update(Request $request, Categoria $categoria)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+        
         $this->verifyGrupo();
 
         if ($categoria->grupo_id != session('grupo_id')) {
@@ -219,6 +244,10 @@ class CategoriaController extends Controller
      */
     public function destroy(Categoria $categoria)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+        
         $this->verifyGrupo();
 
         if ($categoria->grupo_id != session('grupo_id')) {

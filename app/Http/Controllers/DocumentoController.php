@@ -23,13 +23,8 @@ class DocumentoController extends Controller
     private function verifyGrupo()
     {
         $grupoId = session('grupo_id');
-        
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
 
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $grupoId)) {
-
             abort(403, 'Você não tem permissão para acessar este grupo.');
         }
     }
@@ -53,6 +48,10 @@ class DocumentoController extends Controller
         \UspTheme::activeUrl('documentos');
 
         $grupoId = session('grupo_id');
+        
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
         
         $this->verifyGrupo();
         if ($categoria->grupo_id != $grupoId) {
@@ -88,7 +87,9 @@ class DocumentoController extends Controller
         $this->authorize('grupoManager');
 
         $grupoId = session('grupo_id');
-        
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
         $this->verifyGrupo();
 
         $templates = $categoria->templates;
@@ -103,6 +104,9 @@ class DocumentoController extends Controller
     {
         $this->authorize('grupoManager');
         $grupoId = session('grupo_id');
+        if (!$grupoId) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
         $this->verifyGrupo();
         if ($categoria->grupo_id != $grupoId) {
             abort(403, 'Categoria não pertence ao grupo selecionado.');
@@ -213,6 +217,10 @@ class DocumentoController extends Controller
      */
     public function show(Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
@@ -231,6 +239,10 @@ class DocumentoController extends Controller
      */
     public function edit(Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
@@ -256,6 +268,10 @@ class DocumentoController extends Controller
      */
     public function update(Request $request, Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
@@ -393,6 +409,10 @@ class DocumentoController extends Controller
      */
     public function finalizar(Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
@@ -421,6 +441,10 @@ class DocumentoController extends Controller
      */
     public function destroy(Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
@@ -443,6 +467,10 @@ class DocumentoController extends Controller
 
     public function detalharAtividade(Activity $activity)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         $documento = Documento::findOrFail($activity->subject_id);
         if ($documento->categoria->grupo_id != session('grupo_id')) {
@@ -474,6 +502,10 @@ class DocumentoController extends Controller
 
     public function gerarPdf(Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
@@ -573,6 +605,10 @@ class DocumentoController extends Controller
 
     public function copy(Documento $documento)
     {
+        if (!session('grupo_id')) {
+            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
+        }
+
         $this->verifyGrupo();
         if ($documento->categoria->grupo_id != session('grupo_id')) {
             abort(403, 'Documento não pertence ao grupo selecionado.');
