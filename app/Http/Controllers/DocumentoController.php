@@ -494,7 +494,16 @@ class DocumentoController extends Controller
             $arquivo = Arquivo::withTrashed()->where([
             'id' => $activity->properties['id']
             ])->first();
-            return redirect(Storage::url($arquivo->caminho));
+            $caminho = $arquivo->caminho;
+
+            if (!Storage::exists($caminho)) {
+                abort(404);
+            }
+
+            $nomeDownload = $arquivo->nome_original ?? basename($caminho);
+            $nomeDownload = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '-', $nomeDownload);
+
+            return Storage::download($caminho, $nomeDownload);
         }
         
         if (!Gate::allows('manager') && !Auth::user()->hasPermissionTo('manager_' . $documento->categoria->grupo_id)) {

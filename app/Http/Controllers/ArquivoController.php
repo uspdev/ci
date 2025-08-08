@@ -56,7 +56,7 @@ class ArquivoController extends Controller
         }
 
         $nomeDownload = $arquivo->nome_original ?? basename($caminho);
-        $nomeDownload = str_replace(['/', '\\'], '-', $nomeDownload);
+        $nomeDownload = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '-', $nomeDownload);
 
         return Storage::download($caminho, $nomeDownload);
     }
