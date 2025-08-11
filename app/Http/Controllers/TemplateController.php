@@ -47,7 +47,7 @@ class TemplateController extends Controller
 
         $filePath = null;
         if ($request->hasFile('arquivo')) {
-            $filePath = $request->file('arquivo')->store('templates', 'public');
+            $filePath = $request->file('arquivo')->store('templates');
         }
 
         $template = Template::create([
@@ -100,7 +100,7 @@ class TemplateController extends Controller
         ]);
 
         if ($request->hasFile('arquivo')) {
-            $filePath = $request->file('arquivo')->store('templates', 'public');
+            $filePath = $request->file('arquivo')->store('templates');
         }
 
 

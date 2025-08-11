@@ -2,9 +2,11 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header" style="position: sticky; top: 0; z-index: 10;" >
+    <div class="card-header" style="position: sticky; top: 0; z-index: 10;">
       <div class="d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">{{ isset($documento) ? $documento->categoria->nome .' > '.  $documento->codigo . ' > Editar' : 'Novo documento' }}</h4>
+        <h4 class="mb-0">
+          {{ isset($documento) ? $documento->categoria->nome . ' > ' . $documento->codigo . ' > Editar' : 'Novo documento' }}
+        </h4>
 
         <div>
           <button type="submit" class="btn btn-success" form="formDocumento">
@@ -110,11 +112,12 @@
           <label for="mensagem" class="form-label">Mensagem</label>
           <textarea class="form-control" id="mensagem" name="mensagem" rows="6">{{ old('mensagem', $documento->mensagem ?? '') }}</textarea>
         </div>
-
-        <div class="mb-3">
-          <label for="arquivos" class="form-label">Adicionar Arquivo</label>
-          <input type="file" class="form-control" id="arquivos" name="arquivo">
-        </div>
+        @if (!isset($documento))
+          <div class="mb-3">
+            <label for="arquivos" class="form-label">Adicionar Arquivo</label>
+            <input type="file" class="form-control" id="arquivos" name="arquivo">
+          </div>
+        @endif
         <button type="submit" class="btn btn-success" form="formDocumento">
           Salvar
         </button>

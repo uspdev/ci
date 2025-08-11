@@ -65,6 +65,7 @@ class DocumentoController extends Controller
         $query = Documento::where('grupo_id', $grupoId)
             ->where('categoria_id', $categoria->id)
             ->where('ano', $ano)
+            ->orderBy('sequencial', 'desc')
             ->with(['categoria', 'template']);
 
         
@@ -294,33 +295,6 @@ class DocumentoController extends Controller
             'mensagem' => 'required|string',
             'template_id' => 'nullable|exists:templates,id',
         ]);
-
-        if ($request->hasFile('arquivo')) {
-            $file = $request->file('arquivo');
-            $path = $file->store('documentos/anexos');
-            $novoArquivo = $documento->arquivos()->create([
-                'nome_original' => $file->getClientOriginalName(),
-                'tamanho' => $file->getSize(),
-                'tipo_mime' => $file->getClientMimeType(),
-                'tipo_arquivo' => 'upload',
-                'caminho' => $path,
-                'user_id' => Auth::id(),
-            ]);
-
-            if ($documento->arquivo_id) {
-                $arquivo = $documento->arquivos()->where('id', $documento->arquivo_id)->firstOrFail();
-                $nome = $arquivo->nome_original;
-                $id = $arquivo->id;
-                $arquivo->delete();
-
-                activity()
-                    ->performedOn($documento)
-                    ->causedBy(auth()->user())
-                    ->withProperties(['id' => $id, 'arquivo' => $nome])
-                    ->log("Arquivo substituído: {$nome}");
-            }
-            $documento->arquivo_id = $novoArquivo->id;
-        }
         
         $categoria = $documento->categoria;
         $original = $documento;

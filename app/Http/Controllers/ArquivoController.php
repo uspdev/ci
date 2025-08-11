@@ -33,7 +33,7 @@ class ArquivoController extends Controller
         $nomeArquivo = time() . '_' . $nomeOriginal;
         $caminho = $arquivo->storeAs('documentos/arquivos', $nomeArquivo);
 
-        Arquivo::create([
+        $arquivo = Arquivo::create([
             'documento_id' => $documento->id,
             'nome_original' => $nomeOriginal,
             'caminho' => $caminho,
@@ -43,8 +43,11 @@ class ArquivoController extends Controller
             'user_id' => Auth::id(),
         ]);
 
+        $documento->arquivo_id = $arquivo->id;
+        $documento->save();
+
         session()->flash('alert-success', 'Arquivo adicionado com sucesso!');
-        return redirect()->route('documento.edit', $documento);
+        return redirect()->route('documento.show', $documento);
     }
 
     public function download(Arquivo $arquivo)
@@ -68,6 +71,8 @@ class ArquivoController extends Controller
         $nome = $arquivo->nome_original;
         $id = $arquivo->id;
         $arquivo->delete();
+        $documento->arquivo_id = null;
+        $documento->save();
 
         activity()
             ->performedOn($documento)
