@@ -159,9 +159,7 @@ class GrupoController extends Controller
      */
     public function destroy(Grupo $grupo)
     {
-        if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo->id) && ! Gate::allows('manager'))) {
-            return redirect()->route('grupo.show', $grupo);
-        }
+        $this->authorize('manager');
 
         $permission = Permission::findByName('manager_' . $grupo->id);
         $permission->users()->detach();

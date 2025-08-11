@@ -21,7 +21,9 @@
                 <tr>
                   <td class="d-flex justify-content-start">
                     @include('grupo.partials.edit-btn')
-                    @include('grupo.partials.delete-btn')
+                    @can('manager')
+                      @include('grupo.partials.delete-btn')
+                    @endcan
                   </td>
                   <td><a href="grupos/select/{{ $grupo->id }}">{{ $grupo->name }}</a></td>
                   <td>{{ $grupo->description }}</td>
