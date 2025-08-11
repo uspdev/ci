@@ -4,33 +4,34 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center card-header-sticky">
-      <h4 class="mb-0">
+    <div class="card-header d-flex justify-content-between align-items-center card-header-sticky p-1">
+      <div class="h4 text-muted ml-1">
         <a href="{{ route('categoria.index') }}">Categorias</a> > <a
           href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> >
         {{ $documento->codigo }}
-      </h4>
-      <div>
+      </div>
+      <div class="mr-2">
         <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
           @csrf
-          <button type="submit" class="btn btn-outline-success" title="Copiar documento">
+          <button type="submit" class="btn btn-sm btn-outline-success" title="Copiar documento">
             <i class="fas fa-copy"></i>
           </button>
         </form>
         @if (isset($documento->template))
-          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-outline-secondary" target="_blank"
+          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-sm btn-outline-secondary" target="_blank"
             title="Gerar documento">
             <i class="fas fa-file-pdf"></i>
           </a>
         @endif
         @unless ($documento->finalizado)
-          <a href="{{ route('documento.edit', $documento) }}" class="btn btn-outline-primary" title="Editar documento">
+          <a href="{{ route('documento.edit', $documento) }}" class="btn btn-sm btn-outline-primary"
+            title="Editar documento">
             <i class="fas fa-edit"></i>
           </a>
           <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
             @csrf
             @method('PATCH')
-            <button type="submit" class="btn btn-warning"
+            <button type="submit" class="btn btn-sm btn-warning"
               title="Ao finalizar, este documento será marcado como concluído e não poderá mais ser editado. 
               Certifique-se de que todas as informações estão corretas antes de prosseguir."
               onclick="return confirm('Tem certeza que deseja finalizar este documento?')">

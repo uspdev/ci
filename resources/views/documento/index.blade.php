@@ -7,22 +7,24 @@
         <h4 class="mb-0"><a href="{{ route('categoria.index') }}">Categorias</a> >
           {{ $categoria->nome }}</h4>
         <div class="dropdown ml-2 mt-1">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="anoDropdown"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ $ano }}
-          </button>
-          <div class="dropdown-menu" aria-labelledby="anoDropdown">
-            @foreach ($anos as $ano)
-              <a class="dropdown-item" href="{{ route('categoria.docs', ['categoria' => $categoria, 'ano' => $ano]) }}">
-                {{ $ano }}
-              </a>
-            @endforeach
-          </div>
+          <a href="{{ route('categoria.create.doc', $categoria) }}" class="btn btn-outline-success">
+            <i class="fas fa-plus"></i> Novo
+          </a>
         </div>
       </div>
-      <a href="{{ route('categoria.create.doc', $categoria) }}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Novo Documento
-      </a>
+      <div>
+        <button class="btn btn-info dropdown-toggle" type="button" id="anoDropdown" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-calendar"></i> {{ $ano }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="anoDropdown">
+          @foreach ($anos as $ano)
+            <a class="dropdown-item" href="{{ route('categoria.docs', ['categoria' => $categoria, 'ano' => $ano]) }}">
+              {{ $ano }}
+            </a>
+          @endforeach
+        </div>
+      </div>
     </div>
     <div class="card-body">
       <table id="documentos-table" class="table datatable-simples table-striped table-bordered">
@@ -62,7 +64,8 @@
                       <i class="fas fa-edit"></i>
                     </a>
                   @else
-                    <button type="button" class="btn btn btn-warning btn-sm mr-2 d-flex" disabled><i class="fas fa-lock"></i></button>
+                    <button type="button" class="btn btn btn-warning btn-sm mr-2 d-flex" disabled><i
+                        class="fas fa-lock"></i></button>
                   @endunless
                 </div>
               </td>

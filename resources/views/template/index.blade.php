@@ -2,11 +2,11 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex align-items-center">
       <h4 class="mb-0">Templates</h4>
       @can('manager')
-        <a href="{{ route('template.create') }}" class="btn btn-success">
-          <i class="fas fa-plus"></i> Novo Template
+        <a href="{{ route('template.create') }}" class="btn btn-outline-success ml-2">
+          <i class="fas fa-plus"></i> Novo
         </a>
       @endcan
     </div>
