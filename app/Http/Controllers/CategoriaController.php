@@ -256,13 +256,13 @@ class CategoriaController extends Controller
 
         if ($categoria->documentos()->count() > 0) {
             session()->flash('alert-danger', 'Não é possível excluir a categoria pois existem documentos associados.');
-            return redirect()->route('categoria.index');
+            return redirect()->route('categoria.admin');
         }
 
         $categoria->delete();
 
         session()->flash('alert-success', 'Categoria removida com sucesso!');
-        return redirect()->route('categoria.index');
+        return redirect()->route('categoria.admin');
     }
 
 }
