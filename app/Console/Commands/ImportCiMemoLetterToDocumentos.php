@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ImportCiMemoLetterToDocumentos extends Command
 {
@@ -20,21 +21,13 @@ class ImportCiMemoLetterToDocumentos extends Command
         $total = 0;
 
         foreach ($memos as $memo) {
-            $createdAtRaw = $memo->insertion_date;
-
-            if (strlen($createdAtRaw) === 10) {
-                $createdAt = $createdAtRaw . ' 00:00:00';
-            } else {
-                $createdAt = $createdAtRaw;
-            }
-
             DB::table('documentos')->insert([
-                'codigo'          => sprintf('%d/%03d', date('Y', strtotime($memo->insertion_date)), $memo->code),
+                'codigo'          => sprintf('%d/%03d', date('Y', strtotime($memo->date)), $memo->code),
                 'sequencial'      => $memo->code,
-                'ano'             => date('Y', strtotime($memo->insertion_date)),
+                'ano'             => date('Y', strtotime($memo->date)),
                 'destinatario'    => $memo->receiver,
                 'remetente'       => $memo->sender,
-                'data_documento'  => $memo->insertion_date,
+                'data_documento'  => $memo->date,
                 'assunto'         => $memo->subject,
                 'mensagem'        => $memo->text,
                 'finalizado'      => $memo->archieved,
@@ -44,8 +37,8 @@ class ImportCiMemoLetterToDocumentos extends Command
                             : ($memo->category_id == 3 ? 10 : $memo->category_id),
                 'user_id'         => 6,
                 'grupo_id'       =>  3,
-                'created_at'      => $createdAt,
-                'updated_at'      => $createdAt,
+                'created_at'      => Carbon::parse($memo->date)->format('Y-m-d H:i:s'),
+                'updated_at'      => Carbon::parse($memo->date)->format('Y-m-d H:i:s'),
                 'arquivo_id'      => null
             ]);
 
@@ -55,21 +48,13 @@ class ImportCiMemoLetterToDocumentos extends Command
         $letters = DB::table('ci_letter')->get();
 
         foreach ($letters as $letter) {
-            $createdAtRaw = $letter->insertion_date;
-
-            if (strlen($createdAtRaw) === 10) {
-                $createdAt = $createdAtRaw . ' 00:00:00';
-            } else {
-                $createdAt = $createdAtRaw;
-            }
-
             DB::table('documentos')->insert([
-                'codigo'          => sprintf('%d/%03d', date('Y', strtotime($letter->insertion_date)), $letter->code),
+                'codigo'          => sprintf('%d/%03d', date('Y', strtotime($letter->date)), $letter->code),
                 'sequencial'      => $letter->code,
-                'ano'             => date('Y', strtotime($letter->insertion_date)),
+                'ano'             => date('Y', strtotime($letter->date)),
                 'destinatario'    => $letter->receiver,
                 'remetente'       => $letter->sender,
-                'data_documento'  => $letter->insertion_date,
+                'data_documento'  => $letter->date,
                 'assunto'         => $letter->subject,
                 'mensagem'        => '',
                 'finalizado'      => $letter->archieved,
@@ -79,8 +64,8 @@ class ImportCiMemoLetterToDocumentos extends Command
                             : ($letter->category_id == 3 ? 11 : $letter->category_id),
                 'user_id'         => 6,
                 'grupo_id'       =>  3,
-                'created_at'      => $createdAt,
-                'updated_at'      => $createdAt,
+                'created_at'      => Carbon::parse($letter->date)->format('Y-m-d H:i:s'),
+                'updated_at'      => Carbon::parse($letter->date)->format('Y-m-d H:i:s'),
                 'arquivo_id'      => null
             ]);
 
