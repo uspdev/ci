@@ -72,21 +72,20 @@
           {!! $documento->mensagem !!}
         </div>
       </div>
-
+      @if (!isset($documento->arquivo_id))
+        <form id="formArquivo" action="{{ route('arquivo.upload', $documento) }}" method="POST"
+          enctype="multipart/form-data">
+          @csrf
+          <label for="arquivos" class="form-label">Adicionar Arquivo</label>
+          <div class="input-group">
+            <input type="file" class="form-control" id="arquivos" name="arquivo">
+            <button class="btn btn-success ml-2 mb-2" type="submit">Salvar</button>
+          </div>
+        </form>
+      @endif
       @if ($documento->arquivos->count() > 0)
         <div class="mb-4">
           <h5>Arquivos</h5>
-          @if (!isset($documento->arquivo_id))
-            <form id="formArquivo" action="{{ route('arquivo.upload', $documento) }}" method="POST"
-              enctype="multipart/form-data">
-              @csrf
-              <label for="arquivos" class="form-label">Adicionar Arquivo</label>
-              <div class="input-group">
-                <input type="file" class="form-control" id="arquivos" name="arquivo">
-                <button class="btn btn-success ml-2 mb-2" type="submit">Salvar</button>
-              </div>
-            </form>
-          @endif
           <div class="list-group">
             @foreach ($documento->arquivos->sortByDesc('created_at') as $arquivo)
               <div class="list-group-item d-flex justify-content-between align-items-center">
