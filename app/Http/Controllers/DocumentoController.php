@@ -638,7 +638,7 @@ class DocumentoController extends Controller
             Mail::to($categoria->email)->send(new DocumentCreated($novoDocumento));
 
         session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));
-        return redirect()->route('documento.edit', ['documento' => $novoDocumento]);
+        return redirect()->route('documento.show', ['documento' => $novoDocumento]);
     }
 
 }

@@ -3,7 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -24,7 +24,7 @@ class DocumentCreated extends Mailable
 
     public function build()
     {
-        return $this->markdown('emails.create');
+        return $this->markdown('emails.create')->replyTo(Auth::user()->email, Auth::user()->name);
     }
 
     /**
