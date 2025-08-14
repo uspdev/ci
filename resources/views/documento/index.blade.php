@@ -47,7 +47,9 @@
               <td>{{ $documento->data_documento->format('d/m/Y') }}</td>
               <td>{{ $documento->destinatario }}</td>
               <td>{{ $documento->remetente }}</td>
-              <td>{{ Str::limit($documento->assunto, 30) }}</td>
+              <td title="{{ $documento->assunto }}">
+                {{ Str::limit($documento->assunto, 75) }}
+              </td>
               <td>
                 <div class="btn-group" role="group">
                   <a href="{{ route('documento.show', $documento) }}" class="btn btn-outline-success btn-sm mr-2 d-flex">
