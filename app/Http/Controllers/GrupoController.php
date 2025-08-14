@@ -63,7 +63,7 @@ class GrupoController extends Controller
             $grupos = Grupo::whereIn('id', $grupoIds)->get();
         }
 
-        return view('grupo.categorias', compact('grupos'));
+        return view('grupo.listar', compact('grupos'));
     }
 
     /**
