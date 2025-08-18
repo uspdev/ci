@@ -37,6 +37,36 @@ class GrupoController extends Controller
     }
 
     /**
+     * Exibe em cards a lista de grupos conforme as permissões do usuário
+     * Exibe também as categorias de cada grupo
+     *
+     * @return \Illuminate\View\View
+     */
+    public function listar()
+    {
+        $this->authorize('grupoManager');
+
+        $user = Auth::user();
+
+        $sub = [];
+        $permissions = $user->permissions->filter(function ($permission) {
+            return strpos($permission->name, 'manager_') === 0;
+        });
+
+        $grupoIds = $permissions->map(function ($role) {
+            return str_replace('manager_', '', $role->name);
+        });
+        
+        if (Gate::allows('manager')) {
+            $grupos = Grupo::all();
+        } else {
+            $grupos = Grupo::whereIn('id', $grupoIds)->get();
+        }
+
+        return view('grupo.listar', compact('grupos'));
+    }
+
+    /**
      * Exibe o formulário de criação de novo grupo
      *
      * @return \Illuminate\View\View
