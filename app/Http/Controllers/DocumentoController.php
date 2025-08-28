@@ -46,23 +46,15 @@ class DocumentoController extends Controller
     {
         $this->authorize('grupoManager');
         \UspTheme::activeUrl('documentos');
-
-        $grupoId = session('grupo_id');
-        
-        if (!$grupoId) {
-            return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
-        }
+        session(['grupo_id' => $categoria->grupo_id]);
         
         $this->verifyGrupo();
-        if ($categoria->grupo_id != $grupoId) {
-            abort(403, 'Categoria não pertence ao grupo selecionado.');
-        }
 
         if (!$ano){
             $ano = date('Y');
         }
 
-        $query = Documento::where('grupo_id', $grupoId)
+        $query = Documento::where('grupo_id', $categoria->grupo_id)
             ->where('categoria_id', $categoria->id)
             ->where('ano', $ano)
             ->orderBy('sequencial', 'desc')

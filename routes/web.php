@@ -19,7 +19,7 @@ use App\Http\Controllers\DocumentoController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('grupo.listar');
 });
 
 // Permite usar Gate::check('user')na view 404
@@ -28,6 +28,7 @@ Route::fallback(function(){
  });
 
  Route::prefix('grupos')->name('grupo.')->middleware('auth')->group(function () {
+    Route::get('/listar', [GrupoController::class, 'listar'])->name('listar');
     Route::get('/', [GrupoController::class, 'index'])->name('index');
     Route::get('/create', [GrupoController::class, 'create'])->name('create');
     Route::post('/create', [GrupoController::class, 'store'])->name('store');
