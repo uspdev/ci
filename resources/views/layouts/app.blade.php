@@ -31,7 +31,7 @@
 
 @section('javascripts_bottom')
   @parent
-  @vite('resources/js/app.js')
+  {{-- @vite('resources/js/app.js') --}}
 
   <script>
     // Seu código .js
