@@ -45,7 +45,7 @@ class DocumentoController extends Controller
     public function index(Categoria $categoria, $ano = null)
     {
         $this->authorize('grupoManager');
-        \UspTheme::activeUrl('documentos');
+        \UspTheme::activeUrl('categorias');
         session(['grupo_id' => $categoria->grupo_id]);
         
         $this->verifyGrupo();
@@ -629,8 +629,8 @@ class DocumentoController extends Controller
         if(isset($categoria->email))
             Mail::to($categoria->email)->send(new DocumentCreated($novoDocumento));
 
-        session()->flash('alert-success', 'Documento clonado com sucesso! Código ' . ($novoDocumento->codigo ?? 'não definido'));
-        return redirect()->route('documento.show', ['documento' => $novoDocumento]);
+        session()->flash('alert-success', 'Documento copiado com sucesso! Novo código: ' . ($novoDocumento->codigo ?? 'não definido'));
+        return redirect()->route('documento.edit', ['documento' => $novoDocumento]);
     }
 
 }

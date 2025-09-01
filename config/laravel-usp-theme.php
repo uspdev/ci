@@ -13,11 +13,6 @@ $menu = [
 
 $right_menu = [
     [
-        'text' => '<span class="text-danger">Gerenciar categorias</span>',
-        'url' => 'categorias/admin',
-        'can' => 'grupoManager'
-    ],
-    [
         'key' => 'grupos',
     ],
     [
@@ -26,13 +21,6 @@ $right_menu = [
     ],
     [
         'key' => 'laravel-tools',
-    ],
-    [
-        'text' => '<i class="fas fa-cog"></i>',
-        'title' => 'Configurações',
-        'target' => '_blank',
-        'url' => config('app.url') . '/item1',
-        'align' => 'right',
     ],
 ];
 

@@ -34,13 +34,13 @@ class GrupoMenuMiddleware
                     $sub[] = [
                         'text' => $grupo->name,
                         'url' => 'grupos/select/' . $grupo->id,
+                        'align' => 'right',
                     ];
                 }
             }
 
             $sub[] = [
-                'text' => '<i class="fas fa-cog"></i> Configurações',
-                'title' => 'Configurações',
+                'text' => '<i class="fas fa-cog"></i> Gerenciar grupos',
                 'url' => 'grupos',
                 'align' => 'right',
             ];

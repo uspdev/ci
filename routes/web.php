@@ -1,10 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GrupoController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\ArquivoController;
+use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\DocumentoController;
 
 /*
@@ -19,7 +20,13 @@ use App\Http\Controllers\DocumentoController;
 */
 
 Route::get('/', function () {
-    return redirect()->route('grupo.listar');
+    if (Auth::check()) {
+        // Usuário logado → redireciona para grupo.listar
+        return redirect()->route('grupo.listar');
+    }
+
+    // Usuário não logado → mostra view de boas-vindas
+    return view('welcome');
 });
 
 // Permite usar Gate::check('user')na view 404
@@ -49,7 +56,7 @@ Route::prefix('categorias')->name('categoria.')->middleware('auth')->group(funct
     // Route::get('/{categoria}', [CategoriaController::class, 'show'])->name('show');
     Route::get('{categoria}/create', [DocumentoController::class, 'create'])->name('create.doc');
     Route::get('/{categoria}/edit', [CategoriaController::class, 'edit'])->name('edit');
-    Route::get('/{categoria}/{ano?}', [DocumentoController::class, 'index'])->name('docs');
+    Route::get('/{categoria}/{ano?}', [DocumentoController::class, 'index'])->name('show');
     Route::post('/{categoria}', [DocumentoController::class, 'store'])->name('store.doc');
     Route::put('/{categoria}', [CategoriaController::class, 'update'])->name('update');
     Route::delete('/{categoria}', [CategoriaController::class, 'destroy'])->name('destroy');

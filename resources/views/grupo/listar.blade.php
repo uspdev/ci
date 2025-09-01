@@ -6,12 +6,13 @@
   @foreach ($grupos as $grupo)
     <div class="card mb-3">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">{{ $grupo->name }}</h4>
+        <div class="h4 mb-0">Grupo {{ $grupo->name }}</div>
+        <div>@include('grupo.partials.editar-btn', ['label' => 'Editar'])</div>
       </div>
       <div class="card-body">
         @foreach ($grupo->categorias as $categoria)
           <div class="card mb-2">
-            <div class="card-body h5"><a href="{{ route('categoria.docs', $categoria) }}">{{ $categoria->nome }}</a>
+            <div class="card-body h5"><a href="{{ route('categoria.show', $categoria) }}">{{ $categoria->nome }}</a>
             </div>
           </div>
         @endforeach

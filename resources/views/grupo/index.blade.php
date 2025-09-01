@@ -20,7 +20,7 @@
               @foreach ($grupos as $grupo)
                 <tr>
                   <td class="d-flex justify-content-start">
-                    @include('grupo.partials.edit-btn')
+                    @include('grupo.partials.editar-btn')
                     @can('manager')
                       @include('grupo.partials.delete-btn')
                     @endcan

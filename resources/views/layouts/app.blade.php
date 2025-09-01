@@ -21,12 +21,18 @@
 @section('styles')
   @parent
   <style>
-    /*seus estilos*/
+    /* usado no BS5 */
+    .gap-2 {
+      gap: .5rem;
+    }
+
   </style>
 @endsection
 
 @section('javascripts_bottom')
   @parent
+  @vite('resources/js/app.js')
+
   <script>
     // Seu código .js
   </script>

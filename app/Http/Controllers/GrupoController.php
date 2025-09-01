@@ -134,15 +134,16 @@ class GrupoController extends Controller
      * @param Grupo $grupo
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function edit(Grupo $grupo)
+    public function edit(Grupo $grupo, Request $request)
     {
+        $next = $request->next ?: url()->previous();
         if (! Auth::check() || (! Auth::user()->hasPermissionTo('manager_' . $grupo->id) && ! Gate::allows('manager'))) {
             return redirect()->route('grupo.show', $grupo);
         }
 
         $templates = Template::all();
 
-        return view('grupo.edit', compact('grupo', 'templates'));
+        return view('grupo.edit', compact('grupo', 'templates', 'next'));
     }
 
     /**
@@ -178,7 +179,7 @@ class GrupoController extends Controller
 
         Grupo::setGrupoSession();
         session()->flash('alert-success', 'Grupo atualizado com sucesso!');
-        return redirect()->route('grupo.index');
+        return redirect($request->next);
     }
 
     /**

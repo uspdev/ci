@@ -3,12 +3,16 @@
 @section('content')
   <div class="card">
     <div class="card-header">
-      <h4 class="mb-0">Editar Categoria: {{ $categoria->nome }}</h4>
+      <h4 class="mb-0">Categorias
+        <i class="fas fa-angle-right fa-sm"></i> {{ $categoria->nome }}
+        <i class="fas fa-angle-right fa-sm"></i> Editar
+      </h4>
     </div>
     <div class="card-body">
       <form action="{{ route('categoria.update', $categoria) }}" method="POST">
         @csrf
         @method('PUT')
+        <input type="hidden" name="next" value="{{ old('next', $next) }}">
 
         <div class="mb-3">
           <label for="nome" class="form-label">Nome da Categoria</label>
@@ -54,9 +58,9 @@
           @endif
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-success">
-              Atualizar
+              Salvar
             </button>
-            <a href="{{ route('categoria.admin') }}" class="btn btn-secondary ml-2">
+            <a href="{{ $next }}" class="btn btn-secondary ml-2">
               <i class="fas fa-arrow-left"></i> Voltar
             </a>
           </div>

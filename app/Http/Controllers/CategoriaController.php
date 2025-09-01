@@ -19,6 +19,7 @@ class CategoriaController extends Controller
             abort(403, 'Você não tem permissão para acessar este grupo.');
         }
     }
+    
     /**
      * Exibe a lista de categorias do grupo ativo
      *
@@ -80,7 +81,7 @@ class CategoriaController extends Controller
         if (!$grupoId) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
-        
+
         $this->verifyGrupo();
 
         $grupo = Grupo::findOrFail($grupoId);
@@ -104,7 +105,7 @@ class CategoriaController extends Controller
         if (!$grupoId) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
-        
+
         $this->verifyGrupo();
         $request->validate([
             'nome' => 'required|string|max:255|unique:categorias,nome,NULL,id,grupo_id,' . $grupoId,
@@ -147,6 +148,8 @@ class CategoriaController extends Controller
      */
     public function show(Categoria $categoria)
     {
+        \UspTheme::activeUrl('categorias');
+        
         if (!session('grupo_id')) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
@@ -166,8 +169,9 @@ class CategoriaController extends Controller
      * @param Categoria $categoria
      * @return \Illuminate\View\View
      */
-    public function edit(Categoria $categoria)
+    public function edit(Categoria $categoria, Request $request)
     {
+        $next = $request->next ?: url()->previous();
         if (!session('grupo_id')) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
@@ -179,7 +183,7 @@ class CategoriaController extends Controller
         }
 
         $templates = $categoria->grupo->templates()->get();
-        return view('categoria.edit', compact('categoria', 'templates'));
+        return view('categoria.edit', compact('categoria', 'templates', 'next'));
     }
 
     /**
@@ -194,7 +198,7 @@ class CategoriaController extends Controller
         if (!session('grupo_id')) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
-        
+
         $this->verifyGrupo();
 
         if ($categoria->grupo_id != session('grupo_id')) {
@@ -233,7 +237,7 @@ class CategoriaController extends Controller
         ]);
 
         session()->flash('alert-success', 'Categoria atualizada com sucesso!');
-        return redirect()->route('categoria.admin');
+        return redirect($request->next);
     }
 
     /**
@@ -247,7 +251,7 @@ class CategoriaController extends Controller
         if (!session('grupo_id')) {
             return redirect()->route('grupo.index')->with('alert-warning', 'Selecione um grupo primeiro.');
         }
-        
+
         $this->verifyGrupo();
 
         if ($categoria->grupo_id != session('grupo_id')) {
@@ -264,5 +268,4 @@ class CategoriaController extends Controller
         session()->flash('alert-success', 'Categoria removida com sucesso!');
         return redirect()->route('categoria.admin');
     }
-
 }

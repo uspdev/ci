@@ -4,121 +4,104 @@
 
 @section('content')
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center card-header-sticky p-1">
-      <div class="h4 text-muted ml-1">
-        <a href="{{ route('categoria.index') }}">Categorias</a> > <a
-          href="{{ route('categoria.docs', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a> >
-        {{ $documento->codigo }}
+    <div class="card-header d-flex gap-2 flex-wrap card-header-sticky p-1">
+      <div class="h4 ml-1">
+        <a href="{{ route('categoria.show', $documento->categoria) }}"> {{ $documento->categoria->nome }} </a>
+        <i class="fas fa-angle-right fa-sm"></i> {{ $documento->codigo }}
       </div>
       <div class="mr-2">
-        <form action="{{ route('documento.copy', $documento) }}" method="POST" style="display:inline;">
-          @csrf
-          <button type="submit" class="btn btn-sm btn-outline-success" title="Copiar documento">
-            <i class="fas fa-copy"></i>
-          </button>
-        </form>
-        @if (isset($documento->template))
-          <a href="{{ route('documento.pdf', $documento) }}" class="btn btn-sm btn-outline-secondary" target="_blank"
-            title="Gerar documento">
-            <i class="fas fa-file-pdf"></i>
-          </a>
-        @endif
-        @unless ($documento->finalizado)
-          <a href="{{ route('documento.edit', $documento) }}" class="btn btn-sm btn-outline-primary"
-            title="Editar documento">
-            <i class="fas fa-edit"></i>
-          </a>
-          <form action="{{ route('documento.finalizar', $documento) }}" method="POST" class="d-inline">
-            @csrf
-            @method('PATCH')
-            <button type="submit" class="btn btn-sm btn-warning"
-              title="Ao finalizar, este documento será marcado como concluído e não poderá mais ser editado. 
-              Certifique-se de que todas as informações estão corretas antes de prosseguir."
-              onclick="return confirm('Tem certeza que deseja finalizar este documento?')">
-              <i class="fas fa-lock-open"></i> Finalizar
-            </button>
-          </form>
-        @else
-          <button type="button" class="btn btn btn-warning fs-6" disabled><i class="fas fa-lock"></i> Finalizado</button>
-        @endunless
+        @include('documento.partials.editar-btn')
+        @include('documento.partials.pdf-btn')
+        <span class="p-3"></span>
+        @include('documento.partials.fazer-copia-btn')
+        @include('documento.partials.finalizar-btn')
       </div>
     </div>
     <div class="card-body">
-      <div class="row mb-4">
-        <div class="col-md-6">
-          Código: <strong>{{ $documento->codigo }}</strong>
-        </div>
-        <div class="col-md-6 mt-2">
-          Data do Documento: <strong>{{ $documento->data_documento->format('d/m/Y') }}</strong>
-        </div>
-        <div class="col-md-6 mt-2">
-          Remetente: <strong>{{ $documento->remetente }}</strong>
-        </div>
-        <div class="col-md-6 mt-2">
-          Destinatário: <strong>{{ $documento->destinatario }}</strong>
-        </div>
-      </div>
+      <div class="row">
+        <div class="col-md-8" style="border-right: 1px solid #dee2e6; padding-right: 15px;">
 
-      <div class="mb-4">
-        <h5>Assunto</h5>
-        <div class="border p-3 rounded bg-light">
-          {{ $documento->assunto }}
-        </div>
-      </div>
+          <div class="row mb-2">
 
-      <div class="mb-4">
-        <h5>Mensagem</h5>
-        <div class="border p-3 rounded bg-light">
-          {!! $documento->mensagem !!}
-        </div>
-      </div>
-      @if (!isset($documento->arquivo_id))
-        <form id="formArquivo" action="{{ route('arquivo.upload', $documento) }}" method="POST"
-          enctype="multipart/form-data">
-          @csrf
-          <label for="arquivos" class="form-label">Adicionar Arquivo</label>
-          <div class="input-group">
-            <input type="file" class="form-control" id="arquivos" name="arquivo">
-            <button class="btn btn-success ml-2 mb-2" type="submit">Salvar</button>
-          </div>
-        </form>
-      @endif
-      @if ($documento->arquivos->count() > 0)
-        <div class="mb-4">
-          <h5>Arquivos</h5>
-          <div class="list-group">
-            @foreach ($documento->arquivos->sortByDesc('created_at') as $arquivo)
-              <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>{{ $arquivo->nome_original }}</strong>
-                  <br>
-                  <small class="text-muted">
-                    Tamanho: {{ number_format($arquivo->tamanho / 1024, 2) }} KB |
-                    Tipo: {{ $arquivo->tipo_mime }} |
-                    Adicionado em: {{ $arquivo->created_at->format('d/m/Y H:i') }}
-                  </small>
-                </div>
-                <div>
-                  <span class="badge bg-secondary me-2 text-white">{{ ucfirst($arquivo->tipo_arquivo) }}</span>
-                  <a href="{{ route('arquivo.download', $arquivo) }}" target="_blank"
-                    class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-download"></i>
-                  </a>
-
-                  <form action="{{ route('arquivo.destroy', $arquivo) }}" method="POST" style="display:inline;"
-                    onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </form>
-                </div>
+            <div class="col-md-8">
+              Documento
+              <div class="border p-2 rounded bg-light">
+                <strong>{{ $documento->codigo }}</strong>
               </div>
-            @endforeach
+            </div>
+            <div class="col-md-4">
+              Data
+              <div class="border p-2 rounded bg-light">
+                <strong>{{ $documento->data_documento->format('d/m/Y') }}</strong>
+              </div>
+            </div>
           </div>
+          
+          <div class="row mb-4">
+            <div class="col-md-6 mt-2">
+              De
+              <div class="border p-2 rounded bg-light">
+                <strong>{{ $documento->remetente }}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 mt-2">
+              Para
+              <div class="border p-2 rounded bg-light">
+                <strong>{{ $documento->destinatario }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h5>Assunto</h5>
+            <div class="border p-2 rounded bg-light">
+              {{ $documento->assunto }}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h5>Mensagem</h5>
+            <div class="border p-2 rounded bg-light">
+              {!! $documento->mensagem !!}
+            </div>
+          </div>
+
         </div>
-      @endif
+        <div class="col-md-4">
+
+          @if ($documento->arquivos->count() > 0)
+            <div class="mb-4">
+              <h5>Arquivos</h5>
+              <div class="list-group">
+                @foreach ($documento->arquivos->sortByDesc('created_at') as $arquivo)
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <a href="{{ route('arquivo.download', $arquivo) }}" target="_blank" class="font-weight-bold">
+                        {{ $arquivo->nome_original }}
+                      </a>
+                      @include('documento.partials.arquivo-badge')
+                      <br>
+                      <small class="text-muted">
+                        Tam.: {{ number_format($arquivo->tamanho / 1024, 2) }} KB |
+                        Tipo: {{ $arquivo->tipo_mime }} |
+                        Add em: {{ $arquivo->created_at->format('d/m/Y H:i') }}
+                      </small>
+                    </div>
+                    <div>
+                      @include('documento.partials.remover-arquivo-btn')
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+            </div>
+          @endif
+
+          @include('documento.partials.arquivo-upload-btn')
+
+        </div>
+      </div>
+
+
 
       <div class="mt-4 pt-3 border-top">
         <small class="text-muted d-flex align-items-center flex-wrap">
