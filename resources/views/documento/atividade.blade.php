@@ -5,7 +5,7 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">
         <a href="{{ route('categoria.index') }}">Categorias</a> > <a
-          href="{{ route('categoria.docs', $activity->subject->categoria) }}">
+          href="{{ route('categoria.show', $activity->subject->categoria) }}">
           {{ $activity->subject->categoria->nome }} </a> > <a
           href="{{ route('documento.show', $activity->subject) }}">{{ $activity->subject->codigo }}</a> > Detalhes da
         atividade

@@ -441,7 +441,7 @@ class DocumentoController extends Controller
         $documento->delete();
 
         session()->flash('alert-success', 'Documento removido com sucesso!');
-        return redirect()->route('categoria.docs', $categoria);
+        return redirect()->route('categoria.show', $categoria);
     }
 
     public function detalharAtividade(Activity $activity)
@@ -534,7 +534,7 @@ class DocumentoController extends Controller
             if ($arquivoExistente && Storage::exists($caminhoArquivo)) {
                 $pdfContent = Storage::get($caminhoArquivo);
             } else {
-                $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $variaveis, $fullPath);
+                $pdfgen->pdfBuild('F', ['paper'=>'a4', 'orientation' => 'portrait'], $fullPath);
                 
                 $pdfContent = Storage::get($caminhoArquivo);
                 Arquivo::updateOrCreate(

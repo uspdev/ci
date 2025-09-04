@@ -42,7 +42,7 @@ class TemplateController extends Controller
             'conteudo_padrao' => 'required_without:file|string',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
-            'arquivo' => 'nullable|file|mimes:pdf|max:10240',
+            'arquivo' => 'nullable|file|mimes:docx',
         ]);
 
         $filePath = null;
@@ -96,7 +96,7 @@ class TemplateController extends Controller
             'conteudo_padrao' => 'nullable|string',
             'categorias' => 'nullable|array',
             'categorias.*' => 'exists:categorias,id',
-            'arquivo' => 'nullable|file|mimes:docx|max:10240',
+            'arquivo' => 'nullable|file|mimes:docx',
         ]);
 
         if ($request->hasFile('arquivo')) {

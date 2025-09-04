@@ -158,7 +158,7 @@ class Pdfgen
         }
     }
 
-    public function docxBuild($pathToSave = null, $fieldMap = [])
+    public function docxBuild($pathToSave = null)
     {
         if (!file_exists($this->template)) {
             throw new \Exception("Arquivo de template DOCX não encontrado em: $this->template");
@@ -168,9 +168,8 @@ class Pdfgen
         
         unset($this->data['template_id']);
         unset($this->data['categoria']);
-        foreach ($fieldMap as $campo => $info) {
-            $valor = $this->data[$campo] ?? '';
 
+        foreach ($this->data as $campo => $valor) {
             if ($valor == strip_tags($valor)) {
                 $templateProcessor->setValue($campo, $valor);
             } else {
@@ -181,12 +180,12 @@ class Pdfgen
         $templateProcessor->saveAs($pathToSave);
     }
 
-    public function pdfBuild($dest = 'I', $cfg = [], $fieldMap = null, $path)
+    public function pdfBuild($dest = 'I', $cfg = [], $path)
     {
         if ($this->isDocxTemplate()) {
             $docxPath = preg_replace('/\.pdf$/i', '.docx', $path);
 
-            $this->docxBuild($docxPath, $fieldMap);
+            $this->docxBuild($docxPath);
 
             $command = "libreoffice --headless --convert-to pdf --outdir " . escapeshellarg(dirname($path)) . " " . escapeshellarg($docxPath);
             shell_exec($command);
@@ -258,11 +257,11 @@ class Pdfgen
         return strtolower(pathinfo($this->template, PATHINFO_EXTENSION)) === 'docx';
     }
 
-    public function getHash($fieldMap): string
+    public function getHash(): string
     {
         $attributes = [
             'template' => $this->template,
-            'fieldMap' => $fieldMap,
+            'fieldMap' => $this->data,
             'data' => $this->data,
             'headerImg' => $this->headerImg,
             'headerImgWidth' => $this->headerImgWidth,
